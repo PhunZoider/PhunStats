@@ -1,0 +1,7 @@
+title=PhunStats
+name=PhunStats
+id=PhunStats
+authors=UburGeek
+description=Stats and stuff for Phun mods
+poster=poster.png
+require=PhunTools

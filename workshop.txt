@@ -1,0 +1,4 @@
+version=1
+title=PhunStats
+description=Stats and stuff for Phun mods
+tags=Build 41
