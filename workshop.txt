@@ -1,4 +1,6 @@
 version=1
+id=3270425270
 title=PhunStats
 description=Stats and stuff for Phun mods
 tags=Build 41
+visibility=public
