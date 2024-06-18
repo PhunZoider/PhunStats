@@ -3,7 +3,6 @@ if not isServer() then
 end
 local PhunStats = PhunStats
 local gameTime = getGameTime()
-local emptyCalculation = false
 local TEN_MINS = 0.16666667
 
 local lastOnlinePlayers = {}
@@ -236,22 +235,7 @@ Events[PhunStats.events.OnPhunStatsInied].Add(function()
     PhunStats.lastOnlinePlayers = ModData.getOrCreate(PhunStats.name .. "_LastOnline")
 end)
 
-Events.EveryOneMinute.Add(function()
-    if not emptyCalculation then
-        emptyCalculation = true
-    end
-end)
-
-local emptyTickCount = 0
-Events.OnTickEvenPaused.Add(function()
-    if emptyCalculation and emptyTickCount > 100 then
-        if getOnlinePlayers():size() == 0 then
-            emptyCalculation = false
-            PhunStats:updatePlayersTenMin()
-        end
-    elseif emptyTickCount > 100 then
-        emptyTickCount = 0
-    else
-        emptyTickCount = emptyTickCount + 1
-    end
+-- Add a hook to save player data when the server goes empty
+PhunTools:RunOnceWhenServerEmpties(PhunStats.name, function()
+    PhunStats:updatePlayersTenMin()
 end)
