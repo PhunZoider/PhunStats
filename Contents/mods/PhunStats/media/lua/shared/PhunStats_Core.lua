@@ -50,6 +50,30 @@ function PhunStats:registerMyDeath(playerObj, fromPvP)
     end
 end
 
+function PhunStats:registerAmpule(playerObj)
+    local pData = self:getPlayerData(playerObj)
+    if pData then
+        pData.current.ampules = (pData.current.ampules or 0) + 1
+        pData.total.ampules = (pData.total.ampules or 0) + 1
+    end
+end
+
+function PhunStats:registerSmoke(playerObj)
+    local pData = self:getPlayerData(playerObj)
+    if pData then
+        pData.current.smokes = (pData.current.smokes or 0) + 1
+        pData.total.smokes = (pData.total.smokes or 0) + 1
+    end
+end
+
+function PhunStats:registerSprinterKill(playerObj)
+    local pData = self:getPlayerData(playerObj)
+    if pData then
+        pData.current.sprinters = (pData.current.sprinters or 0) + 1
+        pData.total.sprinters = (pData.total.sprinters or 0) + 1
+    end
+end
+
 function PhunStats:registerZedKill(playerObj, byCar)
     local pData = self:getPlayerData(playerObj)
     if pData then
@@ -155,8 +179,41 @@ function PhunStats:ini()
         self.leaderboard = ModData.getOrCreate(PhunStats.name .. "_Leaderboard")
         self.players = ModData.getOrCreate(PhunStats.name .. "_Players")
         self.lastOnlinePlayers = ModData.getOrCreate(PhunStats.name .. "_LastOnline")
+
+        if isServer() then
+            PhunTools:printTable(self.lastOnlinePlayers)
+        end
+
         triggerEvent(self.events.OnPhunStatsInied)
+
+        local oldfnSmokes = OnEat_Cigarettes
+
+        OnEat_Cigarettes = function(food, character, percent)
+            PhunStats:registerSmoke(character)
+            return oldfnSmokes(food, character, percent)
+        end
+
+        if OnEat_Zomboxivir then
+            local oldFnAmpules = OnEat_Zomboxivir
+            OnEat_Zomboxivir = function(food, player, percent)
+                if not food:isRotten() then
+                    PhunStats:registerAmpule(player)
+                end
+                local bodyDamage = player:getBodyDamage();
+                print("before")
+                -- print("infected=" .. tostring(bodyDamage:getInfected()));
+                print("infLevel=" .. tostring(bodyDamage:getInfectionLevel()));
+                local result = oldFnAmpules(food, player, percent)
+                print("after")
+                bodyDamage = player:getBodyDamage();
+                -- print("infected=" .. tostring(bodyDamage:getInfected()));
+                print("infLevel=" .. tostring(bodyDamage:getInfectionLevel()));
+                return result
+            end
+        end
+
     end
+
 end
 
 function PhunStats:debug(...)
@@ -195,7 +252,15 @@ Events.OnCharacterDeath.Add(function(playerObj)
                 PhunStats:registerZedKill(player, true)
             end
         else
-            PhunStats:registerZedKill(player)
+            local zdata = playerObj:getModData()
+            local data = zdata.PhunRunners or {}
+            -- PhunTools:debug("-- z --", zdata)
+            if data.sprinting then
+                PhunStats:registerSprinterKill(player)
+            else
+                PhunStats:registerZedKill(player)
+            end
         end
     end
 end)
+
