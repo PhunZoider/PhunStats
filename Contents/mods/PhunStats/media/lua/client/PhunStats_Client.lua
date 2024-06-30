@@ -7,8 +7,10 @@ local function setup()
     Events.EveryOneMinute.Remove(setup)
     for i = 1, getOnlinePlayers():size() do
         local p = getOnlinePlayers():get(i - 1)
-        sendClientCommand(p, PhunStats.name, PhunStats.commands.requestData, {})
-        sendClientCommand(p, PhunStats.name, PhunStats.commands.lastOnline, {})
+        if p:isLocalPlayer() then
+            sendClientCommand(p, PhunStats.name, PhunStats.commands.requestData, {})
+            sendClientCommand(p, PhunStats.name, PhunStats.commands.lastOnline, {})
+        end
     end
 end
 

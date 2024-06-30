@@ -42,9 +42,10 @@ function PhunStats:updatePlayerTenMin(playerObj)
 
     current.online = true
     current.lastonline = getTimestamp()
-    current.lastgameday = gameTime:getDay()
+    current.lastgameday = gameTime:getDay() + 1
     current.lastgamemonth = gameTime:getMonth() + 1
     current.lastWorldHours = gameTime:getWorldAgeHours()
+    current.lastgameyear = gameTime:getYear()
 
     current.lastupdate = getTimestamp()
     current.current = nil
@@ -77,8 +78,9 @@ function PhunStats:updatePlayersTenMin()
             tempPlayersOnlineNow[pName] = nil
             self.lastOnlinePlayers[pName].online = true
             self.lastOnlinePlayers[pName].lastonline = getTimestamp()
-            self.lastOnlinePlayers[pName].lastgameday = gameTime:getDay()
+            self.lastOnlinePlayers[pName].lastgameday = gameTime:getDay() + 1
             self.lastOnlinePlayers[pName].lastgamemonth = gameTime:getMonth() + 1
+            self.lastOnlinePlayers[pName].lastgameyear = gameTime:getYear() + 1
             self.lastOnlinePlayers[pName].lastWorldHours = gameTime:getWorldAgeHours()
         elseif not tempPlayersOnlineNow[pName] then
             -- not currently "online" so this is a newly logged in player
@@ -99,8 +101,9 @@ function PhunStats:updatePlayersTenMin()
             -- register/update player
             self.lastOnlinePlayers[pName] = {
                 lastonline = getTimestamp(),
-                lastgameday = gameTime:getDay(),
+                lastgameday = gameTime:getDay() + 1,
                 lastgamemonth = gameTime:getMonth() + 1,
+                lastgameyear = gameTime:getYear(),
                 lastWorldHours = gameTime:getWorldAgeHours(),
                 online = true,
                 username = pName
@@ -108,11 +111,6 @@ function PhunStats:updatePlayersTenMin()
             -- don't need to removef from tempPlayersOnlineNow as they were never in there
         end
 
-        -- if tempPlayersOnlineNow[pName].online == false then
-        --     -- user was Offline, but now online!
-        --     -- broadcast onlineplayers after this
-        --     hasDifferentPlayers = true
-        -- end
         if self:updatePlayerTenMin(p) then
             -- if true, then there was a new "high score"
             sendServerCommand(p, PhunStats.name, PhunStats.commands.requestData, {
