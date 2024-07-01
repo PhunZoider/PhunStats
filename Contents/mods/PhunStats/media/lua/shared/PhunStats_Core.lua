@@ -7,7 +7,8 @@ PhunStats = {
         newUser = "newUser",
         returnUser = "returnUser",
         sprinterKill = "sprinterKill",
-        deathBySprinter = "deathBySprinter"
+        deathBySprinter = "deathBySprinter",
+        adminUpdatePlayerOnline = "adminUpdatePlayerOnline"
     },
     settings = {
         debug = true

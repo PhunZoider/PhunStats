@@ -153,7 +153,7 @@ end
 
 function PhunStats:transmitOnline()
     self.lastOnlinePlayers = table.sort(self.lastOnlinePlayers, function(a, b)
-        return (a.lastonline or 0) > (b.value.lastonline or 0)
+        return (a.lastonline or 0) > (b.lastonline or 0)
     end)
     ModData.transmit(PhunStats.name .. "_LastOnline")
 end
@@ -188,6 +188,28 @@ end
 
 Commands[PhunStats.commands.lastOnline] = function(playerObj, arguments)
     sendServerCommand(playerObj, PhunStats.name, PhunStats.commands.lastOnline, PhunStats.lastOnlinePlayers)
+end
+
+Commands[PhunStats.commands.adminUpdatePlayerOnline] = function(playerObj, arguments)
+
+    local playerName = arguments.playerName
+
+    if playerName and string.len(playerName) > 0 then
+
+        local existing = PhunStats.lastOnlinePlayers[playerName] or {}
+
+        PhunStats.lastOnlinePlayers[playerName] = {
+            lastonline = tonumber(arguments.lastonline or 0),
+            lastgameday = tonumber(arguments.lastgameday or 0),
+            lastgamemonth = tonumber(arguments.lastgamemonth or 0),
+            lastgameyear = tonumber(arguments.lastgameyear or 0),
+            lastWorldHours = tonumber(arguments.lastWorldHours or 0),
+            online = existing.online == true,
+            username = playerName
+        }
+        PhunStats:transmitOnline()
+    end
+
 end
 
 Events.OnClientCommand.Add(function(module, command, playerObj, arguments)
