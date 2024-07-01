@@ -43,12 +43,15 @@ Events.OnReceiveGlobalModData.Add(function(tableName, tableData)
 
     if tableName == PhunStats.name .. "_Leaderboard" and type(tableData) == "table" then
         PhunStats.leaderboard = tableData
+        ModData.add(PhunStats.name .. "_Leaderboard", PhunStats.leaderboard)
         triggerEvent(PhunStats.events.OnPhunStatsLeaderboardUpdated, tableData)
     elseif tableName == PhunStats.name .. "_Players" and type(tableData) == "table" then
         PhunStats.players = tableData
+        ModData.add(PhunStats.name .. "_Players", PhunStats.players)
         triggerEvent(PhunStats.events.OnPhunStatsPlayersReceived, tableData)
     elseif tableName == PhunStats.name .. "_LastOnline" and type(tableData) == "table" then
         PhunStats.lastOnlinePlayers = tableData
+        ModData.add(PhunStats.name .. "_LastOnline", PhunStats.lastOnlinePlayers)
         triggerEvent(PhunStats.events.OnPhunStatsPlayersUpdated, tableData)
     end
 end)

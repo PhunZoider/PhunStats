@@ -5,13 +5,17 @@ PhunStats = {
         requestData = "requestData",
         lastOnline = "lastOnline",
         newUser = "newUser",
-        returnUser = "returnUser"
+        returnUser = "returnUser",
+        sprinterKill = "sprinterKill",
+        deathBySprinter = "deathBySprinter"
     },
     settings = {
         debug = true
     },
     leaderboard = {},
     lastOnlinePlayers = {},
+    leaderboardTransmitted = 0,
+    leaderboardModified = 0,
     players = {},
     events = {
         OnPhunStatsInied = "OnPhunStatsInied",
@@ -38,86 +42,55 @@ function PhunStats:registerMyDeath(playerObj, fromPvP)
         end
         pData.total.deaths = (pData.total.deaths or 0) + deathAdd
         pData.total.pvp_deaths = (pData.total.pvp_deaths or 0) + pvpAdd
-        pData.current.hours = 0
-        pData.current.kills = 0
-        pData.current.pvp_kills = 0
-        pData.current.damage = 0
-        pData.current.damage_taken = 0
-        pData.current.ampules = 0
-        pData.current.sprinters = 0
-        pData.current.smokes = 0
-        pData.current.car_kills = 0
+        pData.current = {}
     end
 end
 
 function PhunStats:registerAmpule(playerObj)
-    local pData = self:getPlayerData(playerObj)
-    if pData then
-        pData.current.ampules = (pData.current.ampules or 0) + 1
-        pData.total.ampules = (pData.total.ampules or 0) + 1
-    end
+    self:incrementStat(playerObj, "ampules")
 end
 
 function PhunStats:registerSmoke(playerObj)
-    local pData = self:getPlayerData(playerObj)
-    if pData then
-        pData.current.smokes = (pData.current.smokes or 0) + 1
-        pData.total.smokes = (pData.total.smokes or 0) + 1
-    end
+    self:incrementStat(playerObj, "smokes")
 end
 
 function PhunStats:registerSprinterKill(playerObj)
-    local pData = self:getPlayerData(playerObj)
-    if pData then
-        pData.current.sprinters = (pData.current.sprinters or 0) + 1
-        pData.total.sprinters = (pData.total.sprinters or 0) + 1
+    if isClient() then
+        -- be sure to tell server about it or it will be missed
+        sendClientCommand(self.name, self.commands.sprinterKill, {})
+    end
+    if playerObj and playerObj.getUsername then
+        self:incrementStat(playerObj, "sprinters")
     end
 end
 
 function PhunStats:registerZedKill(playerObj, byCar)
-    local pData = self:getPlayerData(playerObj)
-    if pData then
-        if byCar == true then
-            pData.current.car_kills = (pData.current.car_kills or 0) + 1
-            pData.total.car_kills = (pData.total.car_kills or 0) + 1
-        else
-            pData.current.kills = (pData.current.kills or 0) + 1
-            pData.total.kills = (pData.total.kills or 0) + 1
-        end
-
+    if byCar then
+        self:incrementStat(playerObj, "car_kills")
+    else
+        self:incrementStat(playerObj, "kills")
     end
 end
 
 function PhunStats:registerPvPKill(playerObj, byCar)
-    local pData = self:getPlayerData(playerObj)
-    if pData then
-        if byCar == true then
-            pData.current.pvp_car_kills = (pData.current.pvp_car_kills or 0) + 1
-            pData.total.pvp_car_kills = (pData.total.pvp_car_kills or 0) + 1
-        else
-            pData.current.pvp_kills = (pData.current.pvp_kills or 0) + 1
-            pData.total.pvp_kills = (pData.total.pvp_kills or 0) + 1
-        end
+    if byCar then
+        self:incrementStat(playerObj, "pvp_car_kills")
+    else
+        self:incrementStat(playerObj, "pvp_kills")
     end
 end
 
 function PhunStats:registerPvPDeath(playerObj, byCar)
+
+    if byCar then
+        self:incrementStat(playerObj, "pvp_car_deaths")
+    else
+        self:incrementStat(playerObj, "pvp_deaths")
+    end
+
     local pData = self:getPlayerData(playerObj)
     if pData then
-        if byCar then
-            pData.total.pvp_car_deaths = (pData.total.pvp_car_deaths or 0) + 1
-        else
-            pData.total.pvp_deaths = (pData.total.pvp_deaths or 0) + 1
-        end
-        pData.current.hours = 0
-        pData.current.kills = 0
-        pData.current.pvp_kills = 0
-        pData.current.damage = 0
-        pData.current.damage_taken = 0
-        pData.current.ampules = 0
-        pData.current.sprinters = 0
-        pData.current.smokes = 0
-        pData.current.car_kills = 0
+        pData.current = {}
     end
 end
 
@@ -125,8 +98,10 @@ function PhunStats:getPlayerData(playerObj)
     local key = nil
     if type(playerObj) == "string" then
         key = playerObj
-    else
+    elseif playerObj and playerObj.getUsername then
         key = playerObj:getUsername()
+    else
+        print("PhunStats:getPlayerData() - invalid playerObj " .. tostring(playerObj))
     end
     if key and string.len(key) > 0 then
         if not self.players then
@@ -145,31 +120,76 @@ function PhunStats:getPlayerData(playerObj)
     end
 end
 
-function PhunStats:getLeaderboardEntry(key)
-    if not self.leaderboard[key] then
-        self.leaderboard[key] = {
+function PhunStats:getLeaderboardEntry(category, key)
+    if not self.leaderboard[category] then
+        self.leaderboard[category] = {}
+    end
+    if not self.leaderboard[category][key] then
+        self.leaderboard[category][key] = {
             who = nil,
             value = 0
         }
     end
-    return self.leaderboard[key]
+    return self.leaderboard[category][key]
 end
 
-function PhunStats:leaderboardCheck(playerName, key, value)
-    local leader = self:getLeaderboardEntry(key)
+function PhunStats:leaderboardCheck(playerName, category, key, value)
+    local leader = self:getLeaderboardEntry(category, key)
     if value > (leader.value or 0) then
-        leader.who = playerName
+
+        if type(playerName) == "string" then
+            leader.who = playerName
+        elseif playerName and playerName.getUsername then
+            leader.who = playerName:getUsername()
+        end
+
         leader.value = value
+        self.leaderboard[category][key] = leader
+        self.leaderboardModified = getTimestamp()
+        triggerEvent(self.events.OnPhunStatsLeaderboardUpdated)
         return true
+
     end
     return false
+end
+
+function PhunStats:incrementStat(playerName, key, value)
+    local pData = self:getPlayerData(playerName)
+    if pData then
+        self:updateStat(playerName, "current", key, (pData.current[key] or 0) + (value or 1))
+        self:updateStat(playerName, "total", key, (pData.total[key] or 0) + (value or 1))
+    end
+end
+
+function PhunStats:incrementTotalStat(playerName, key, value)
+    local pData = self:getPlayerData(playerName)
+    if pData then
+        self:updateStat(playerName, "total", key, (pData.total[key] or 0) + (value or 1))
+    end
+end
+
+function PhunStats:incrementCurrentStat(playerName, key, value)
+    local pData = self:getPlayerData(playerName)
+    if pData then
+        self:updateStat(playerName, "current", key, (pData.total[key] or 0) + (value or 1))
+    end
+end
+
+function PhunStats:setStat(playerName, key, value)
+    self:updateStat(playerName, "current", key, value)
+    self:updateStat(playerName, "total", key, value)
 end
 
 function PhunStats:updateStat(playerName, category, key, value)
     local pData = self:getPlayerData(playerName)
     if pData then
-        pData.current[category] = value
-        return self:leaderboardCheck(playerName, key, value)
+        if not pData[category] then
+            pData[category] = {}
+        end
+        pData[category][key] = value
+        if isServer() then
+            return self:leaderboardCheck(playerName, category, key, value)
+        end
     end
 end
 
@@ -179,10 +199,6 @@ function PhunStats:ini()
         self.leaderboard = ModData.getOrCreate(PhunStats.name .. "_Leaderboard")
         self.players = ModData.getOrCreate(PhunStats.name .. "_Players")
         self.lastOnlinePlayers = ModData.getOrCreate(PhunStats.name .. "_LastOnline")
-
-        if isServer() then
-            PhunTools:printTable(self.lastOnlinePlayers)
-        end
 
         triggerEvent(self.events.OnPhunStatsInied)
 
@@ -200,14 +216,7 @@ function PhunStats:ini()
                     PhunStats:registerAmpule(player)
                 end
                 local bodyDamage = player:getBodyDamage();
-                print("before")
-                -- print("infected=" .. tostring(bodyDamage:getInfected()));
-                print("infLevel=" .. tostring(bodyDamage:getInfectionLevel()));
                 local result = oldFnAmpules(food, player, percent)
-                print("after")
-                bodyDamage = player:getBodyDamage();
-                -- print("infected=" .. tostring(bodyDamage:getInfected()));
-                print("infLevel=" .. tostring(bodyDamage:getInfectionLevel()));
                 return result
             end
         end
@@ -222,6 +231,17 @@ function PhunStats:debug(...)
         PhunTools:debug(args)
     end
 end
+
+Events[PhunRunners.events.OnPhunRunnersZedDied].Add(function(playerObj, zedObj)
+    -- a sprinter died
+    if playerObj and playerObj.getUsername then
+        if playerObj:isLocalPlayer() then
+            -- notify server of the kill. This only happend on client
+            PhunStats:registerSprinterKill(playerObj)
+        end
+
+    end
+end)
 
 Events.OnCharacterDeath.Add(function(playerObj)
     if instanceof(playerObj, "IsoPlayer") then
@@ -254,12 +274,11 @@ Events.OnCharacterDeath.Add(function(playerObj)
         else
             local zdata = playerObj:getModData()
             local data = zdata.PhunRunners or {}
-            -- PhunTools:debug("-- z --", zdata)
             if data.sprinting then
+                -- notify server of the kill. This only happend on client
                 PhunStats:registerSprinterKill(player)
-            else
-                PhunStats:registerZedKill(player)
             end
+            PhunStats:registerZedKill(player)
         end
     end
 end)

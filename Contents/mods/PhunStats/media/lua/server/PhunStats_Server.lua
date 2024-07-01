@@ -14,43 +14,55 @@ local totalKeys = {"pvp_deaths", "pvp_car_deaths", "deaths"}
 
 -- Updates online player every 10 game mins
 function PhunStats:updatePlayerTenMin(playerObj)
+
+    local now = getTimestamp()
     local pData = self:getPlayerData(playerObj)
     local pName = playerObj:getUsername()
-    local kills = playerObj:getZombieKills()
     local current = pData.current or {}
     local total = pData.total or {}
-    local killDifferential = ((current.kills or 0) - kills)
 
-    current.hours = (current.hours or 0) + TEN_MINS
-    total.hours = (total.hours or 0) + TEN_MINS
-
-    local hasNewHigh = false
-    for _, key in ipairs(currentAndTotalKeys) do
-        local totalInc = (current[key] or 0) - (total[key] or 0)
-        if self:updateStat(pName, "current", key, pData.current[key] or 0) then
-            hasNewHigh = true
-        end
-        if self:updateStat(pName, "total", key, totalInc) then
-            hasNewHigh = true
-        end
-    end
-    for _, key in ipairs(totalKeys) do
-        if self:updateStat(pName, "total", key, pData.total[key] or 0) then
-            hasNewHigh = true
-        end
+    local timePassed = now - (current.lastupdate or now)
+    if timePassed > 0 then
+        self:incrementStat(playerObj, "real_hours", timePassed / 60)
     end
 
-    current.online = true
-    current.lastonline = getTimestamp()
-    current.lastgameday = gameTime:getDay() + 1
-    current.lastgamemonth = gameTime:getMonth() + 1
-    current.lastWorldHours = gameTime:getWorldAgeHours()
-    current.lastgameyear = gameTime:getYear()
+    -- local kills = playerObj:getZombieKills()
 
-    current.lastupdate = getTimestamp()
-    current.current = nil
-    current.total = nil
-    return hasNewHigh
+    -- self:updateStat(pName, "current", "kills", playerObj:getZombieKills())
+    -- -- Don't add to total as that is total "previous"
+    -- -- self:updateStat(pName, "total", "kills", kills)
+
+    -- self:updateStat(pName, "current", "hours", (pData.current.hours or 0) + TEN_MINS)
+    -- self:updateStat(pName, "current", "pvp_kills", (pData.current.pvp_kills or 0) + 1)
+    -- self:updateStat(pName, "current", "pvp_car_kills", (pData.current.pvp_car_kills or 0) + TEN_MINS)
+
+    -- local killDifferential = ((current.kills or 0) - kills)
+
+    -- current.hours = (current.hours or 0) + TEN_MINS
+    -- total.hours = (total.hours or 0) + TEN_MINS
+
+    -- local hasNewHigh = false
+    -- for _, key in ipairs(currentAndTotalKeys) do
+    --     local totalInc = (current[key] or 0) - (total[key] or 0)
+    --     if self:updateStat(pName, "current", key, pData.current[key] or 0) then
+    --         hasNewHigh = true
+    --     end
+    --     if self:updateStat(pName, "total", key, totalInc) then
+    --         hasNewHigh = true
+    --     end
+    -- end
+
+    -- current.online = true
+    -- current.lastonline = getTimestamp()
+    -- current.lastgameday = gameTime:getDay() + 1
+    -- current.lastgamemonth = gameTime:getMonth() + 1
+    -- current.lastWorldHours = gameTime:getWorldAgeHours()
+    -- current.lastgameyear = gameTime:getYear()
+
+    -- current.lastupdate = getTimestamp()
+    -- current.current = nil
+    -- current.total = nil
+    -- return hasNewHigh
 end
 
 function PhunStats:updatePlayersTenMin()
@@ -70,11 +82,22 @@ function PhunStats:updatePlayersTenMin()
     for i = 1, getOnlinePlayers():size() do
         local p = getOnlinePlayers():get(i - 1)
         local pName = p:getUsername()
+
         local pData = self:getPlayerData(pName)
 
         if tempPlayersOnlineNow[pName] then
             -- was online and clearly still here!
             -- remove from tempPlayersOnlineNow
+
+            local timePassed = getTimestamp() - (tempPlayersOnlineNow[pName].lastupdate or getTimestamp())
+            if timePassed > 0 then
+                self:incrementStat(p, "real_hours", timePassed)
+            end
+            local gameTimePassed = gameTime:getWorldAgeHours() - (tempPlayersOnlineNow[pName].lastWorldHours or 0)
+            if gameTimePassed > 0 then
+                self:incrementStat(p, "hours", gameTimePassed)
+            end
+
             tempPlayersOnlineNow[pName] = nil
             self.lastOnlinePlayers[pName].online = true
             self.lastOnlinePlayers[pName].lastonline = getTimestamp()
@@ -110,20 +133,9 @@ function PhunStats:updatePlayersTenMin()
             }
             -- don't need to removef from tempPlayersOnlineNow as they were never in there
         end
-
-        if self:updatePlayerTenMin(p) then
-            -- if true, then there was a new "high score"
-            sendServerCommand(p, PhunStats.name, PhunStats.commands.requestData, {
-                playerIndex = p:getPlayerNum(),
-                playerName = p:getUsername(),
-                playerData = pData
-            })
-            -- so we broadcast leaderboard after this
-            hasNewHigh = true
-        end
     end
     if hasNewHigh then
-        self:transmitLeaderboard()
+        self.leaderboardModified = getTimestamp()
     end
 
     -- remaining tempPlayersOnlineNow are players that are no longer online
@@ -135,19 +147,19 @@ function PhunStats:updatePlayersTenMin()
     if hasDifferentPlayers then
         self:transmitOnline()
     end
+
     lastOnlinePlayers = tempPlayersOnlineNow
 end
 
 function PhunStats:transmitOnline()
-    -- sort first
     self.lastOnlinePlayers = table.sort(self.lastOnlinePlayers, function(a, b)
-        return (a.lastWorldHours or 0) > (b.value.lastWorldHours or 0)
+        return (a.lastonline or 0) > (b.value.lastonline or 0)
     end)
     ModData.transmit(PhunStats.name .. "_LastOnline")
 end
 
 function PhunStats:transmitLeaderboard()
-    -- sort first
+    self.leaderboardTransmitted = getTimestamp()
     ModData.transmit(PhunStats.name .. "_Leaderboard")
 end
 
@@ -159,33 +171,11 @@ function PhunStats:sendLastOnline(playerObj)
     end
 end
 
-function PhunStats:updateLeaderboardWithLastOnline()
-    local changed = false
-    local leaderboard = self.leaderboard;
-    local keys = {"hours", "kills", "deaths", "pvp_kills", "pvp_deaths", "pvp_car_kills", "pvp_car_deaths", "damage",
-                  "damage_taken", "ampules", "sprinters", "smokes", "car_kills"}
-    for k, v in pairs(lastOnlinePlayers) do
-        local pData = self:getPlayerData(k)
-
-        if pData then
-            for _, key in ipairs(keys) do
-                local leader = self:getLeaderboardEntry(key)
-                if pData.current and pData.current[key] and (pData.current[key] > (leader.value or 0)) then
-                    leaderboard[key].who = k
-                    leaderboard[key].value = pData.current[key]
-                    changed = true
-                end
-            end
-        end
-    end
-
-    if changed then
-        self:transmitLeaderboard()
-    end
-
-end
-
 local Commands = {}
+
+Commands[PhunStats.commands.sprinterKill] = function(playerObj, arguments)
+    PhunStats:registerSprinterKill(playerObj)
+end
 
 Commands[PhunStats.commands.requestData] = function(playerObj, arguments)
     local data = PhunStats:getPlayerData(playerObj)
@@ -209,19 +199,15 @@ Events.OnGameStart.Add(function()
     PhunStats:ini()
 end)
 
-Events.OnCharacterDeath.Add(function(playerObj)
-    if instanceof(playerObj, "IsoPlayer") then
-        local data = PhunStats:getPlayerData(playerObj)
-        data.total.deaths = (data.total.deaths or 0) + 1
-    end
-end)
-
 Events.OnInitGlobalModData.Add(function()
     PhunStats:ini()
 end)
 
 Events.EveryTenMinutes.Add(function()
     PhunStats:updatePlayersTenMin()
+    if PhunStats.leaderboardModified > (PhunStats.leaderboardTransmitted + 10) then
+        PhunStats:transmitLeaderboard()
+    end
 end)
 
 Events.EveryHours.Add(function()
