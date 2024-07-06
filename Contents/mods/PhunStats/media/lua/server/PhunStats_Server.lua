@@ -103,7 +103,7 @@ function PhunStats:updatePlayersTenMin()
             self.lastOnlinePlayers[pName].lastonline = getTimestamp()
             self.lastOnlinePlayers[pName].lastgameday = gameTime:getDay() + 1
             self.lastOnlinePlayers[pName].lastgamemonth = gameTime:getMonth() + 1
-            self.lastOnlinePlayers[pName].lastgameyear = gameTime:getYear() + 1
+            self.lastOnlinePlayers[pName].lastgameyear = gameTime:getYear()
             self.lastOnlinePlayers[pName].lastWorldHours = gameTime:getWorldAgeHours()
         elseif not tempPlayersOnlineNow[pName] then
             -- not currently "online" so this is a newly logged in player

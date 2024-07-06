@@ -41,8 +41,11 @@ function PhunStats:registerMyDeath(playerObj, fromPvP)
             deathAdd = 0
             pvpAdd = 1
         end
-        pData.total.deaths = (pData.total.deaths or 0) + deathAdd
-        pData.total.pvp_deaths = (pData.total.pvp_deaths or 0) + pvpAdd
+        if not fromPvP then
+            self:incrementTotalStat(playerObj, "deaths")
+        else
+            self:incrementTotalStat(playerObj, "deaths")
+        end
         pData.current = {}
     end
 end
