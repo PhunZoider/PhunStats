@@ -8,7 +8,8 @@ PhunStats = {
         returnUser = "returnUser",
         sprinterKill = "sprinterKill",
         deathBySprinter = "deathBySprinter",
-        adminUpdatePlayerOnline = "adminUpdatePlayerOnline"
+        adminUpdatePlayerOnline = "adminUpdatePlayerOnline",
+        clientUpdates = "clientUpdates"
     },
     settings = {
         debug = true
@@ -18,6 +19,7 @@ PhunStats = {
     leaderboardTransmitted = 0,
     leaderboardModified = 0,
     players = {},
+
     events = {
         OnPhunStatsInied = "OnPhunStatsInied",
         OnPhunStatsClientReady = "OnPhunStatsClientReady",
@@ -68,6 +70,34 @@ function PhunStats:registerSprinterKill(playerObj)
     end
 end
 
+function PhunStats:registerRun(playerObj, distance, duration)
+    if isClient() then
+        -- be sure to tell server about it or it will be missed
+        sendClientCommand(self.name, self.commands.clientUpdates, {
+            runDistance = distance,
+            runDuration = duration
+        })
+    end
+    if playerObj and playerObj.getUsername then
+        self:incrementStat(playerObj, "runDistance", distance)
+        self:incrementStat(playerObj, "runDuration", duration)
+    end
+end
+
+function PhunStats:registerSprint(playerObj, distance, duration)
+    if isClient() then
+        -- be sure to tell server about it or it will be missed
+        sendClientCommand(self.name, self.commands.clientUpdates, {
+            sprintDistance = distance,
+            sprintDuration = duration
+        })
+    end
+    if playerObj and playerObj.getUsername then
+        self:incrementStat(playerObj, "sprintDistance", distance)
+        self:incrementStat(playerObj, "sprintDuration", duration)
+    end
+end
+
 function PhunStats:registerZedKill(playerObj, byCar)
     if byCar then
         self:incrementStat(playerObj, "car_kills")
@@ -96,6 +126,33 @@ function PhunStats:registerPvPDeath(playerObj, byCar)
     if pData then
         pData.current = {}
     end
+end
+
+function PhunStats:getLocalPlayerData(playerObj)
+    local key = nil
+    if type(playerObj) == "string" then
+        key = playerObj
+    elseif playerObj and playerObj.getUsername then
+        key = playerObj:getUsername()
+    else
+        print("PhunStats:getLocalPlayerData() - invalid playerObj " .. tostring(playerObj))
+    end
+    if key and string.len(key) > 0 then
+        if not self.lplayers then
+            self.lplayers = {}
+        end
+        if not self.lplayers[key] then
+            self.lplayers[key] = {}
+        end
+        if not self.lplayers[key].current then
+            self.lplayers[key].current = {}
+        end
+        if not self.lplayers[key].total then
+            self.lplayers[key].total = {}
+        end
+        return self.lplayers[key]
+    end
+
 end
 
 function PhunStats:getPlayerData(playerObj)

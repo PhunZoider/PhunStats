@@ -14,6 +14,94 @@ local function setup()
     end
 end
 
+local function getDistance(start, finish)
+    local x = math.abs(start.x - finish.x)
+    local y = math.abs(start.y - finish.y)
+    local z = math.abs(start.z - finish.z)
+    return math.sqrt(x ^ 2 + y ^ 2 + z ^ 2)
+end
+
+function PhunStats:playerMoving(playerObj)
+
+    local data = self:getLocalPlayerData(playerObj)
+
+    local isMoving, isRunning, isSprinting = playerObj:isMoving(), playerObj:isRunning(), playerObj:isSprinting()
+    local x, y, z = playerObj:getX(), playerObj:getY(), playerObj:getZ()
+
+    if isRunning and not data.current.isRunning then
+        -- started running
+        print("Started running")
+        data.current.isRunning = true
+        data.current.runningLocation = {
+            x = x,
+            y = y,
+            z = z
+        }
+        data.current.runningStartTime = os.time()
+    elseif not isRunning and data.current.isRunning then
+        -- stopped running
+        data.current.isRunning = false
+        self:registerRun(playerObj, data.current.runningDistance, os.time() - data.current.runningStartTime)
+
+        print("Ran " .. tostring(data.current.runningDistance) .. " meters in ",
+            tostring(os.time() - data.current.runningStartTime), " seconds")
+        data.current.runningLocation = nil
+        data.current.runningStartTime = nil
+        data.current.runningDistance = nil
+        data.current.runningDuration = nil
+    elseif isRunning and data.current.isRunning then
+        -- still running
+        data.current.runningDistance = (data.current.runningDistance or 0) + getDistance(data.current.runningLocation, {
+            x = x,
+            y = y,
+            z = z
+        })
+        data.current.runningLocation = {
+            x = x,
+            y = y,
+            z = z
+        }
+    end
+    if isSprinting and not data.current.isSprinting then
+        -- started sprinting
+        print("Started sprinting")
+        data.current.isSprinting = true
+        data.current.sprintingLocation = {
+            x = x,
+            y = y,
+            z = z
+        }
+        data.current.sprintingStartTime = os.time()
+    elseif not isSprinting and data.current.isSprinting then
+        -- stopped sprinting
+        data.current.isSprinting = false
+        local distance = getDistance(data.current.sprintingLocation, {
+            x = x,
+            y = y,
+            z = z
+        })
+        print("Sprintted " .. tostring(data.current.sprintingDistance) .. " meters in ",
+            tostring(os.time() - data.current.sprintingStartTime), " seconds")
+        self:registerSprint(playerObj, data.current.sprintingDistance, os.time() - data.current.sprintingStartTime)
+        data.current.sprintingLocation = nil
+        data.current.sprintingStartTime = nil
+        data.current.runningDistance = nil
+    elseif isSprinting and data.current.isSprinting then
+        -- still sprinting
+        data.current.sprintingDistance = (data.current.sprintingDistance or 0) +
+                                             getDistance(data.current.sprintingLocation, {
+                x = x,
+                y = y,
+                z = z
+            })
+        data.current.sprintingLocation = {
+            x = x,
+            y = y,
+            z = z
+        }
+    end
+end
+
 local Commands = {}
 
 Commands[PhunStats.commands.requestData] = function(arguments)
@@ -54,4 +142,8 @@ Events.OnReceiveGlobalModData.Add(function(tableName, tableData)
         ModData.add(PhunStats.name .. "_LastOnline", PhunStats.lastOnlinePlayers)
         triggerEvent(PhunStats.events.OnPhunStatsPlayersUpdated, tableData)
     end
+end)
+
+Events.OnPlayerMove.Add(function(playerObj)
+    PhunStats:playerMoving(playerObj)
 end)

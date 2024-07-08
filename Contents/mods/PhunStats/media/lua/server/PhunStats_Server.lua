@@ -26,43 +26,6 @@ function PhunStats:updatePlayerTenMin(playerObj)
         self:incrementStat(playerObj, "real_hours", timePassed / 60)
     end
 
-    -- local kills = playerObj:getZombieKills()
-
-    -- self:updateStat(pName, "current", "kills", playerObj:getZombieKills())
-    -- -- Don't add to total as that is total "previous"
-    -- -- self:updateStat(pName, "total", "kills", kills)
-
-    -- self:updateStat(pName, "current", "hours", (pData.current.hours or 0) + TEN_MINS)
-    -- self:updateStat(pName, "current", "pvp_kills", (pData.current.pvp_kills or 0) + 1)
-    -- self:updateStat(pName, "current", "pvp_car_kills", (pData.current.pvp_car_kills or 0) + TEN_MINS)
-
-    -- local killDifferential = ((current.kills or 0) - kills)
-
-    -- current.hours = (current.hours or 0) + TEN_MINS
-    -- total.hours = (total.hours or 0) + TEN_MINS
-
-    -- local hasNewHigh = false
-    -- for _, key in ipairs(currentAndTotalKeys) do
-    --     local totalInc = (current[key] or 0) - (total[key] or 0)
-    --     if self:updateStat(pName, "current", key, pData.current[key] or 0) then
-    --         hasNewHigh = true
-    --     end
-    --     if self:updateStat(pName, "total", key, totalInc) then
-    --         hasNewHigh = true
-    --     end
-    -- end
-
-    -- current.online = true
-    -- current.lastonline = getTimestamp()
-    -- current.lastgameday = gameTime:getDay() + 1
-    -- current.lastgamemonth = gameTime:getMonth() + 1
-    -- current.lastWorldHours = gameTime:getWorldAgeHours()
-    -- current.lastgameyear = gameTime:getYear()
-
-    -- current.lastupdate = getTimestamp()
-    -- current.current = nil
-    -- current.total = nil
-    -- return hasNewHigh
 end
 
 function PhunStats:updatePlayersTenMin()
@@ -177,6 +140,14 @@ Commands[PhunStats.commands.sprinterKill] = function(playerObj, arguments)
     PhunStats:registerSprinterKill(playerObj)
 end
 
+Commands[PhunStats.commands.clientUpdates] = function(playerObj, arguments)
+    PhunTools:printTable(arguments)
+    for k, v in pairs(arguments) do
+        print("Updating " .. tostring(k) .. " to " .. tostring(v))
+        PhunStats:incrementStat(playerObj, k, v)
+    end
+end
+
 Commands[PhunStats.commands.requestData] = function(playerObj, arguments)
     local data = PhunStats:getPlayerData(playerObj)
     sendServerCommand(playerObj, PhunStats.name, PhunStats.commands.requestData, {
@@ -244,4 +215,13 @@ end)
 -- Add a hook to save player data when the server goes empty
 PhunTools:RunOnceWhenServerEmpties(PhunStats.name, function()
     PhunStats:updatePlayersTenMin()
+end)
+
+Events.OnPlayerMove.Add(function(playerObj)
+    local data = PhunStats:getPlayerData(playerObj)
+
+    local isMoving, isRunning, isSprinting = playerObj:isMoving(), playerObj:isRunning(), playerObj:isSprinting()
+    local x, y, z = playerObj:getX(), playerObj:getY(), playerObj:getZ()
+    print("Player is moving: " .. tostring(isMoving) .. " is running: " .. tostring(isRunning) .. " is sprinting: " ..
+              tostring(isSprinting))
 end)
