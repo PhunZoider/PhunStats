@@ -21,6 +21,29 @@ local function getDistance(start, finish)
     return math.sqrt(x ^ 2 + y ^ 2 + z ^ 2)
 end
 
+PhunStats.pendingClientUpdates = {}
+PhunStats.pendingClientUpdateModified = 0
+PhunStats.pendingClientUpdatesSent = 0
+
+function PhunStats:registerForClietnUpdate(playerObj, key, value)
+
+    for _, v in ipairs(self.pendingClientUpdates) do
+        if v.player == playerObj:getUsername() and v.key == key then
+            v.value = v.value + value
+            self.pendingClientUpdateModified = getTimestamp()
+            return
+        end
+    end
+
+    table.insert(self.pendingClientUpdates, {
+        player = playerObj:getUsername(),
+        key = key,
+        value = value
+    })
+
+    self.pendingClientUpdateModified = getTimestamp()
+end
+
 function PhunStats:playerMoving(playerObj)
 
     local data = self:getLocalPlayerData(playerObj)
@@ -30,7 +53,6 @@ function PhunStats:playerMoving(playerObj)
 
     if isRunning and not data.current.isRunning then
         -- started running
-        print("Started running")
         data.current.isRunning = true
         data.current.runningLocation = {
             x = x,
@@ -42,9 +64,6 @@ function PhunStats:playerMoving(playerObj)
         -- stopped running
         data.current.isRunning = false
         self:registerRun(playerObj, data.current.runningDistance, os.time() - data.current.runningStartTime)
-
-        print("Ran " .. tostring(data.current.runningDistance) .. " meters in ",
-            tostring(os.time() - data.current.runningStartTime), " seconds")
         data.current.runningLocation = nil
         data.current.runningStartTime = nil
         data.current.runningDistance = nil
@@ -64,7 +83,6 @@ function PhunStats:playerMoving(playerObj)
     end
     if isSprinting and not data.current.isSprinting then
         -- started sprinting
-        print("Started sprinting")
         data.current.isSprinting = true
         data.current.sprintingLocation = {
             x = x,
@@ -80,8 +98,6 @@ function PhunStats:playerMoving(playerObj)
             y = y,
             z = z
         })
-        print("Sprintted " .. tostring(data.current.sprintingDistance) .. " meters in ",
-            tostring(os.time() - data.current.sprintingStartTime), " seconds")
         self:registerSprint(playerObj, data.current.sprintingDistance, os.time() - data.current.sprintingStartTime)
         data.current.sprintingLocation = nil
         data.current.sprintingStartTime = nil
@@ -104,6 +120,11 @@ end
 
 local Commands = {}
 
+Commands[PhunStats.commands.newUser] = function(arguments)
+    PhunStats:ini()
+    print("New user " .. arguments.name)
+end
+
 Commands[PhunStats.commands.requestData] = function(arguments)
     PhunStats:ini()
     PhunStats.players[arguments.playerName] = arguments.playerData
@@ -124,7 +145,13 @@ Events.OnServerCommand.Add(function(module, command, arguments)
 end)
 
 Events.EveryTenMinutes.Add(function()
-    -- PhunInfoUI.OnOpenPanel(getPlayer())
+    if PhunStats.pendingClientUpdateModified > PhunStats.pendingClientUpdatesSent then
+        if PhunStats.pendingClientUpdates and #PhunStats.pendingClientUpdates > 0 then
+            sendClientCommand(PhunStats.name, PhunStats.commands.clientUpdates, PhunStats.pendingClientUpdates)
+            PhunStats.pendingClientUpdates = {}
+            PhunStats.pendingClientUpdatesSent = getTimestamp()
+        end
+    end
 end)
 
 Events.OnReceiveGlobalModData.Add(function(tableName, tableData)

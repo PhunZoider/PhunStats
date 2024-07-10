@@ -72,6 +72,7 @@ function PhunStats:updatePlayersTenMin()
             -- not currently "online" so this is a newly logged in player
             if not self.lastOnlinePlayers[pName] then
                 -- we've never registered this player!
+                print("New player: " .. pName)
                 sendServerCommand(PhunStats.name, PhunStats.commands.newUser, {
                     name = pName
                 })
@@ -141,10 +142,9 @@ Commands[PhunStats.commands.sprinterKill] = function(playerObj, arguments)
 end
 
 Commands[PhunStats.commands.clientUpdates] = function(playerObj, arguments)
-    PhunTools:printTable(arguments)
-    for k, v in pairs(arguments) do
-        print("Updating " .. tostring(k) .. " to " .. tostring(v))
-        PhunStats:incrementStat(playerObj, k, v)
+
+    for _, v in ipairs(arguments) do
+        PhunStats:incrementStat(v.player, tostring(v.key), v.value)
     end
 end
 
@@ -222,6 +222,5 @@ Events.OnPlayerMove.Add(function(playerObj)
 
     local isMoving, isRunning, isSprinting = playerObj:isMoving(), playerObj:isRunning(), playerObj:isSprinting()
     local x, y, z = playerObj:getX(), playerObj:getY(), playerObj:getZ()
-    print("Player is moving: " .. tostring(isMoving) .. " is running: " .. tostring(isRunning) .. " is sprinting: " ..
-              tostring(isSprinting))
+
 end)

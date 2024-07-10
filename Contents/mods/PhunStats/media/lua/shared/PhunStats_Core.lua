@@ -72,11 +72,8 @@ end
 
 function PhunStats:registerRun(playerObj, distance, duration)
     if isClient() then
-        -- be sure to tell server about it or it will be missed
-        sendClientCommand(self.name, self.commands.clientUpdates, {
-            runDistance = distance,
-            runDuration = duration
-        })
+        self:registerForClietnUpdate(playerObj, "runDistance", distance)
+        self:registerForClietnUpdate(playerObj, "runDuration", duration)
     end
     if playerObj and playerObj.getUsername then
         self:incrementStat(playerObj, "runDistance", distance)
@@ -86,11 +83,13 @@ end
 
 function PhunStats:registerSprint(playerObj, distance, duration)
     if isClient() then
-        -- be sure to tell server about it or it will be missed
-        sendClientCommand(self.name, self.commands.clientUpdates, {
-            sprintDistance = distance,
-            sprintDuration = duration
-        })
+        -- -- be sure to tell server about it or it will be missed
+        -- sendClientCommand(self.name, self.commands.clientUpdates, {
+        --     sprintDistance = distance,
+        --     sprintDuration = duration
+        -- })
+        self:registerForClietnUpdate(playerObj, "sprintDistance", distance)
+        self:registerForClietnUpdate(playerObj, "sprintDuration", duration)
     end
     if playerObj and playerObj.getUsername then
         self:incrementStat(playerObj, "sprintDistance", distance)
@@ -327,7 +326,7 @@ Events.OnCharacterDeath.Add(function(playerObj)
     elseif instanceof(playerObj, "IsoZombie") then
         -- zed died
         local player = playerObj:getAttackedBy()
-        local vehicle = player:getVehicle()
+        local vehicle = player.getVehicle and player:getVehicle()
         if vehicle then
             if vehicle:getDriver() == player then
                 PhunStats:registerZedKill(player, true)
