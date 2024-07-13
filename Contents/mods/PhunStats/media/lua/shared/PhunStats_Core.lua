@@ -292,16 +292,18 @@ function PhunStats:debug(...)
     end
 end
 
-Events[PhunRunners.events.OnPhunRunnersZedDied].Add(function(playerObj, zedObj)
-    -- a sprinter died
-    if playerObj and playerObj.getUsername then
-        if playerObj:isLocalPlayer() then
-            -- notify server of the kill. This only happend on client
-            PhunStats:registerSprinterKill(playerObj)
-        end
+if PhunRunners then
+    Events[PhunRunners.events.OnPhunRunnersZedDied].Add(function(playerObj, zedObj)
+        -- a sprinter died
+        if playerObj and playerObj.getUsername then
+            if playerObj:isLocalPlayer() then
+                -- notify server of the kill. This only happend on client
+                PhunStats:registerSprinterKill(playerObj)
+            end
 
-    end
-end)
+        end
+    end)
+end
 
 Events.OnCharacterDeath.Add(function(playerObj)
     if instanceof(playerObj, "IsoPlayer") then
