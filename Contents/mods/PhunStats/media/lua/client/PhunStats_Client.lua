@@ -128,6 +128,7 @@ end
 Commands[PhunStats.commands.requestData] = function(arguments)
     PhunStats:ini()
     PhunStats.players[arguments.playerName] = arguments.playerData
+    PhunStats.leaderboard = arguments.leaderboard
     triggerEvent(PhunStats.events.OnPhunStatsClientReady, arguments)
 end
 
@@ -159,6 +160,7 @@ Events.OnReceiveGlobalModData.Add(function(tableName, tableData)
     if tableName == PhunStats.name .. "_Leaderboard" and type(tableData) == "table" then
         PhunStats.leaderboard = tableData
         ModData.add(PhunStats.name .. "_Leaderboard", PhunStats.leaderboard)
+        -- PhunTools:printTable(tableData)
         triggerEvent(PhunStats.events.OnPhunStatsLeaderboardUpdated, tableData)
     elseif tableName == PhunStats.name .. "_Players" and type(tableData) == "table" then
         PhunStats.players = tableData
@@ -171,6 +173,7 @@ Events.OnReceiveGlobalModData.Add(function(tableName, tableData)
     end
 end)
 
-Events.OnPlayerMove.Add(function(playerObj)
-    PhunStats:playerMoving(playerObj)
-end)
+-- Remove this block for now
+-- Events.OnPlayerMove.Add(function(playerObj)
+--     PhunStats:playerMoving(playerObj)
+-- end)

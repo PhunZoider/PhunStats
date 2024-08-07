@@ -205,6 +205,9 @@ function PhunStats:leaderboardCheck(playerName, category, key, value)
 
         leader.value = value
         self.leaderboard[category][key] = leader
+
+        -- print("PhunStats:leaderboardCheck() - " .. tostring(playerName) .. " is now the leader in " ..
+        --           tostring(category) .. " " .. tostring(key) .. " with " .. tostring(value))
         self.leaderboardModified = getTimestamp()
         triggerEvent(self.events.OnPhunStatsLeaderboardUpdated)
         return true

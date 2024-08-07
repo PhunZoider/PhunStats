@@ -31,7 +31,6 @@ end
 function PhunStats:updatePlayersTenMin()
     local tempPlayersOnlineNow = {}
     local tempWasOnline = {}
-    local hasNewHigh = false
     local hasDifferentPlayers = false
 
     -- get a copy of everyone "online"
@@ -98,9 +97,6 @@ function PhunStats:updatePlayersTenMin()
             -- don't need to removef from tempPlayersOnlineNow as they were never in there
         end
     end
-    if hasNewHigh then
-        self.leaderboardModified = getTimestamp()
-    end
 
     -- remaining tempPlayersOnlineNow are players that are no longer online
     for k, v in pairs(tempPlayersOnlineNow) do
@@ -153,7 +149,8 @@ Commands[PhunStats.commands.requestData] = function(playerObj, arguments)
     sendServerCommand(playerObj, PhunStats.name, PhunStats.commands.requestData, {
         playerIndex = playerObj:getPlayerNum(),
         playerName = playerObj:getUsername(),
-        playerData = data
+        playerData = data,
+        leaderboard = PhunStats.leaderboard
     })
 end
 
@@ -198,13 +195,13 @@ end)
 
 Events.EveryTenMinutes.Add(function()
     PhunStats:updatePlayersTenMin()
-    if PhunStats.leaderboardModified > (PhunStats.leaderboardTransmitted + 10) then
-        PhunStats:transmitLeaderboard()
-    end
 end)
 
 Events.EveryHours.Add(function()
-
+    -- reducing the frequency of leaderboard updates
+    if PhunStats.leaderboardModified > (PhunStats.leaderboardTransmitted + 10) then
+        PhunStats:transmitLeaderboard()
+    end
 end)
 
 Events[PhunStats.events.OnPhunStatsInied].Add(function()
