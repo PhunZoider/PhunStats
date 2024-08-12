@@ -12,22 +12,6 @@ local currentAndTotalKeys = {"hours", "kills", "pvp_kills", "pvp_car_kills", "da
 
 local totalKeys = {"pvp_deaths", "pvp_car_deaths", "deaths"}
 
--- Updates online player every 10 game mins
-function PhunStats:updatePlayerTenMin(playerObj)
-
-    local now = getTimestamp()
-    local pData = self:getPlayerData(playerObj)
-    local pName = playerObj:getUsername()
-    local current = pData.current or {}
-    local total = pData.total or {}
-
-    local timePassed = now - (current.lastupdate or now)
-    if timePassed > 0 then
-        self:incrementStat(playerObj, "real_hours", timePassed / 60)
-    end
-
-end
-
 function PhunStats:updatePlayersTenMin()
     local tempPlayersOnlineNow = {}
     local tempWasOnline = {}

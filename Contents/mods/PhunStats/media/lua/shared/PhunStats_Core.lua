@@ -97,6 +97,12 @@ function PhunStats:registerSprint(playerObj, distance, duration)
     end
 end
 
+function PhunStats:registerBanditKill(playerObj)
+
+    self:incrementStat(playerObj, "bandit_kills")
+
+end
+
 function PhunStats:registerZedKill(playerObj, byCar)
     if byCar then
         self:incrementStat(playerObj, "car_kills")
@@ -152,6 +158,26 @@ function PhunStats:getLocalPlayerData(playerObj)
         return self.lplayers[key]
     end
 
+end
+
+-- Updates online player every 10 game mins
+function PhunStats:updatePlayerTenMin(playerObj)
+
+    local now = getTimestamp()
+    local pData = self:getPlayerData(playerObj)
+    local pName = playerObj:getUsername()
+    local current = pData.current or {}
+    local total = pData.total or {}
+
+    local timePassed = now - (current.lastupdate or now)
+    if timePassed > 0 then
+        self:incrementStat(playerObj, "real_hours", timePassed / 60)
+    end
+    local gameTimePassed = getGameTime():getWorldAgeHours() - (current.lastHours or getGameTime():getWorldAgeHours())
+    if gameTimePassed > 0 then
+        self:incrementStat(playerObj, "hours", gameTimePassed)
+    end
+    current.lastHours = getGameTime():getWorldAgeHours()
 end
 
 function PhunStats:getPlayerData(playerObj)
@@ -308,6 +334,8 @@ if PhunRunners then
     end)
 end
 
+local banditsIntegration = nil
+
 Events.OnCharacterDeath.Add(function(playerObj)
     if instanceof(playerObj, "IsoPlayer") then
         -- a player died
@@ -330,8 +358,22 @@ Events.OnCharacterDeath.Add(function(playerObj)
         end
     elseif instanceof(playerObj, "IsoZombie") then
         -- zed died
+        if banditsIntegration == nil then
+            banditsIntegration = getActivatedMods():contains("Bandits")
+        end
+
+        if banditsIntegration == true then
+            local data = playerObj:getModData()
+            if data and data.brain then
+                -- this is a bandit
+                print("bandit killed")
+                local player = playerObj:getAttackedBy()
+                PhunStats:registerBanditKill(player)
+                return
+            end
+        end
         local player = playerObj:getAttackedBy()
-        local vehicle = player.getVehicle and player:getVehicle()
+        local vehicle = player and player.getVehicle and player:getVehicle()
         if vehicle then
             if vehicle:getDriver() == player then
                 PhunStats:registerZedKill(player, true)

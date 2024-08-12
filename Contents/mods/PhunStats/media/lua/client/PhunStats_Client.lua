@@ -153,6 +153,12 @@ Events.EveryTenMinutes.Add(function()
             PhunStats.pendingClientUpdatesSent = getTimestamp()
         end
     end
+    for i = 1, getOnlinePlayers():size() do
+        local p = getOnlinePlayers():get(i - 1)
+        if p:isLocalPlayer() then
+            PhunStats:updatePlayerTenMin(p)
+        end
+    end
 end)
 
 Events.OnReceiveGlobalModData.Add(function(tableName, tableData)
