@@ -145,6 +145,8 @@ Events.OnServerCommand.Add(function(module, command, arguments)
     end
 end)
 
+local tenMinInc = 0
+
 Events.EveryTenMinutes.Add(function()
     if PhunStats.pendingClientUpdateModified > PhunStats.pendingClientUpdatesSent then
         if PhunStats.pendingClientUpdates and #PhunStats.pendingClientUpdates > 0 then
@@ -153,12 +155,23 @@ Events.EveryTenMinutes.Add(function()
             PhunStats.pendingClientUpdatesSent = getTimestamp()
         end
     end
+    local doRequest = false
+    if tenMinInc > 3 then
+        tenMinInc = 1
+        doRequest = true
+    else
+        tenMinInc = tenMinInc + 1
+    end
     for i = 1, getOnlinePlayers():size() do
         local p = getOnlinePlayers():get(i - 1)
         if p:isLocalPlayer() then
             PhunStats:updatePlayerTenMin(p)
+            if doRequest then
+                sendClientCommand(p, PhunStats.name, PhunStats.commands.requestData, {})
+            end
         end
     end
+
 end)
 
 Events.OnReceiveGlobalModData.Add(function(tableName, tableData)

@@ -165,7 +165,9 @@ Commands[PhunStats.commands.adminUpdatePlayerOnline] = function(playerObj, argum
 end
 
 Events.OnClientCommand.Add(function(module, command, playerObj, arguments)
+
     if module == PhunStats.name and Commands[command] then
+        print("OnClientCommand: " .. module .. " " .. command)
         Commands[command](playerObj, arguments)
     end
 end)

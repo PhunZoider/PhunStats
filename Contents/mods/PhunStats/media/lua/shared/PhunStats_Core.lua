@@ -270,6 +270,11 @@ function PhunStats:setStat(playerName, key, value)
 end
 
 function PhunStats:updateStat(playerName, category, key, value)
+    if key ~= "hours" then
+        print(
+            "PhunStats:updateStat() - " .. tostring(playerName) .. " " .. tostring(category) .. " " .. tostring(key) ..
+                " " .. tostring(value))
+    end
     local pData = self:getPlayerData(playerName)
     if pData then
         if not pData[category] then
@@ -324,6 +329,7 @@ end
 if PhunRunners then
     Events[PhunRunners.events.OnPhunRunnersZedDied].Add(function(playerObj, zedObj)
         -- a sprinter died
+        print("SPRINTER DIED")
         if playerObj and playerObj.getUsername then
             if playerObj:isLocalPlayer() then
                 -- notify server of the kill. This only happend on client
