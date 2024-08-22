@@ -270,11 +270,11 @@ function PhunStats:setStat(playerName, key, value)
 end
 
 function PhunStats:updateStat(playerName, category, key, value)
-    if key ~= "hours" then
-        print(
-            "PhunStats:updateStat() - " .. tostring(playerName) .. " " .. tostring(category) .. " " .. tostring(key) ..
-                " " .. tostring(value))
-    end
+    -- if key ~= "hours" then
+    --     print(
+    --         "PhunStats:updateStat() - " .. tostring(playerName) .. " " .. tostring(category) .. " " .. tostring(key) ..
+    --             " " .. tostring(value))
+    -- end
     local pData = self:getPlayerData(playerName)
     if pData then
         if not pData[category] then
