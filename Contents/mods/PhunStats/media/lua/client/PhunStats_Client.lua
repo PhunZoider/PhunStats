@@ -4,7 +4,7 @@ end
 local PhunStats = PhunStats
 
 local function setup()
-    Events.EveryOneMinute.Remove(setup)
+    Events.OnTick.Remove(setup)
     for i = 1, getOnlinePlayers():size() do
         local p = getOnlinePlayers():get(i - 1)
         if p:isLocalPlayer() then
@@ -132,7 +132,7 @@ Commands[PhunStats.commands.requestData] = function(arguments)
     triggerEvent(PhunStats.events.OnPhunStatsClientReady, arguments)
 end
 
-Events.EveryOneMinute.Add(setup)
+Events.OnTick.Add(setup)
 
 Commands[PhunStats.commands.lastOnline] = function(arguments)
     PhunStats.lastOnlinePlayers = arguments

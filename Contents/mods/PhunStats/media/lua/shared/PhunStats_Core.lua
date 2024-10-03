@@ -290,9 +290,9 @@ end
 function PhunStats:ini()
     if not self.inied then
         self.inied = true
-        self.leaderboard = ModData.getOrCreate(PhunStats.name .. "_Leaderboard")
-        self.players = ModData.getOrCreate(PhunStats.name .. "_Players")
-        self.lastOnlinePlayers = ModData.getOrCreate(PhunStats.name .. "_LastOnline")
+        self.leaderboard = ModData.getOrCreate(self.name .. "_Leaderboard")
+        self.players = ModData.getOrCreate(self.name .. "_Players")
+        self.lastOnlinePlayers = ModData.getOrCreate(self.name .. "_LastOnline")
 
         triggerEvent(self.events.OnPhunStatsInied)
 
@@ -327,7 +327,7 @@ function PhunStats:debug(...)
 end
 
 if PhunRunners then
-    Events[PhunRunners.events.OnPhunRunnersZedDied].Add(function(playerObj, zedObj)
+    Events[PhunRunners.events.OnSprinterDeath].Add(function(zedObj, playerObj, carKill)
         -- a sprinter died
         print("SPRINTER DIED")
         if playerObj and playerObj.getUsername then
