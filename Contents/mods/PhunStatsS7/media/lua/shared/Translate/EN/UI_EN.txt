@@ -1,0 +1,22 @@
+UI_EN = {
+    UI_PhunStats_pvpDeaths = "Killed in PvP",
+    UI_PhunStats_banditDeaths = "Killed by Bandits",
+    UI_PhunStats_zombieDeaths = "Killed by Zombies",
+    UI_PhunStats_otherDeaths = "Killed by other",
+    UI_PhunStats_carDeaths = "Killed by cars",
+    UI_PhunStats_ampules = "Ampules consumed",
+    UI_PhunStats_smokes = "Smokes",
+    UI_PhunStats_zombieKills = "Zombies killed",
+    UI_PhunStats_sprinterKills = "Sprinters killed",
+    UI_PhunStats_banditKills = "Bandits Killed",
+    UI_PhunStats_pvpKills = "Kills from Pvp",
+    UI_PhunStats_carKills = "Kills with a Car",
+    UI_PhunStats_hours = "Hours survived",
+
+    UI_PhunStats_Window_Label = "Stats",
+    UI_PhunStats_Tab_Stats = "Stats",
+
+    UI_PhunStats_CharacterTab = "Stats",
+    UI_PhunStats_CharacterTabTotal = "Totals"
+
+}
