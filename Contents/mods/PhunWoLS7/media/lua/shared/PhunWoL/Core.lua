@@ -51,6 +51,9 @@ function Core:calculateOnline()
         local onlinePlayers = getOnlinePlayers() -- Call the function to get the players
         local nowOnline = {}
         local changeKey = ""
+
+        local data = {}
+
         if onlinePlayers and onlinePlayers.size and onlinePlayers:size() > 0 then
 
             if gt == nil then
@@ -95,12 +98,10 @@ function Core:calculateOnline()
             end
         end
         self.online = nowOnline
-        table.sort(self.data, function(a, b)
-            return a.lastOnline > b.lastOnline
-        end)
+
         if self.lastChangeKey ~= changeKey then
             self.lastChangeKey = changeKey
-            triggerEvent(self.events.updated, self.data, self.online)
+            triggerEvent(self.events.updated, data, self.online)
         end
 
     end

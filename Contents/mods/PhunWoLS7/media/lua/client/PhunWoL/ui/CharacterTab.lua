@@ -57,9 +57,23 @@ end
 function UI:updateData()
 
     self.datas:clear();
+    local data = {}
+
     for k, v in pairs(PW.data) do
         v.online = PW.online[k] == true
-        self.datas:addItem(k, v)
+        table.insert(data, v)
+
+    end
+
+    table.sort(data, function(a, b)
+        if a.lastOnline ~= b.lastOnline then
+            return a.lastOnline > b.lastOnline
+        end
+        return a.playername > b.playername
+    end)
+
+    for _, v in ipairs(data) do
+        self.datas:addItem(v.playername, v)
     end
 
 end

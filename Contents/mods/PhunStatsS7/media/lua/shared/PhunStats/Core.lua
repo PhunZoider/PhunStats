@@ -67,14 +67,16 @@ PhunStats = {
             leaderboard = true,
             current = true,
             total = true,
-            category = "CONSUMED"
+            category = "CONSUMED",
+            notifyServer = true
         },
         smokes = {
             ordinal = 510,
             leaderboard = true,
             current = true,
             total = true,
-            category = "CONSUMED"
+            category = "CONSUMED",
+            notifyServer = true
         },
         zombieKills = {
             ordinal = 300,
@@ -147,7 +149,10 @@ local doTotalAndCurrent = function(stat, player, value)
         end
         if stat.notifyServer then
             -- notify server
-            sendClientCommand(player, PhunStats.commands.notifyServer, {key, value})
+            sendClientCommand(PhunStats.name, PhunStats.commands.notifyServer, {
+                key = stat.key,
+                value = value
+            })
         end
     end
     local data = PhunStats:getData(player)
