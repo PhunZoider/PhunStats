@@ -122,9 +122,7 @@ function UI:prerender()
 
     local maxWidth = self.parent.width
     local maxHeight = self.parent.height
-    if maxHeight > 400 then
-        maxHeight = 400
-    end
+
     local minHeight = 250
     local sw = maxWidth
     local tabY = self.parent.tabHeight
@@ -174,7 +172,7 @@ function UI:drawDatas(y, item, alt)
     local value = PS.data[self.parent.playerName][self.parent.source][item.item.key] or 0
     if item.item.key == "hours" and self.parent.source == "total" then
         -- had to keep hours additive for total
-        value = value + PS.data[self.parent.playerName]["current"]["hours"]
+        -- value = value + PS.data[self.parent.playerName]["current"]["hours"]
     end
 
     value = PhunTools:formatWholeNumber(PS.data[self.parent.playerName][self.parent.source][item.item.key] or 0)
@@ -302,9 +300,6 @@ function TUI:prerender()
 
     local maxWidth = self.parent.width
     local maxHeight = self.parent.height
-    if maxHeight > 400 then
-        maxHeight = 400
-    end
     local minHeight = 250
     local sw = maxWidth
     local tabY = self.parent.tabHeight
@@ -354,7 +349,7 @@ function TUI:drawDatas(y, item, alt)
     local value = PS.data[self.parent.playerName][self.parent.source][item.item.key] or 0
     if item.item.key == "hours" and self.parent.source == "total" then
         -- had to keep hours additive for total
-        value = value + PS.data[self.parent.playerName]["current"]["hours"]
+        -- value = value + PS.data[self.parent.playerName]["current"]["hours"]
     end
 
     value = PhunTools:formatWholeNumber(value)

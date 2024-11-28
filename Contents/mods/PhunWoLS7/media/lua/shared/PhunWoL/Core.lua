@@ -164,9 +164,6 @@ function Core:calculateOnline()
             triggerEvent(self.events.updated, self.data, self.online)
         end
 
-        print("PhunWoL: Calculated online players")
-        PhunTools:printTable(self.data)
-
     end
 
     Delay:set(15, function()

@@ -28,35 +28,13 @@ local function deferLeadboardUpdates(category, key)
         return
     end
 
-    -- print("deferLeadboardUpdates ", category, ", ", key)
     if deferred[category] == nil then
         deferred[category] = {}
     end
-    -- print("-------------")
+
     deferred[category][key] = PL.data[category][key]
-    -- print("Deferrment now")
-    -- PhunTools:printTable(deferred)
 
     PL.deferrmentLastModified = getTimestamp()
-    -- if lastDelayTime == 0 then
-
-    --     lastDelayTime = getTimestamp()
-    --     print("Last delay time")
-    --     -- broadcast updates after delay
-    --     Delay:set(PL.settings.deferSeconds, function()
-    --         if lastModified > lastSentTime then
-    --             PhunTools:debug("Sending deferred leaderboard updates", deferred)
-    --             sendServerCommand(PL.name, PL.commands.update, deferred)
-
-    --             -- reset delay
-    --             deferred = {}
-    --             lastDelayTime = 0
-    --             lastSentTime = getTimestamp()
-    --         end
-
-    --     end, "transmitLeaderboards")
-
-    -- end
 
 end
 

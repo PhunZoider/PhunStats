@@ -68,7 +68,8 @@ PhunStats = {
             current = true,
             total = true,
             category = "CONSUMED",
-            notifyServer = true
+            notifyServer = true,
+            resetCurrentOnDeath = true
         },
         smokes = {
             ordinal = 510,
@@ -76,14 +77,16 @@ PhunStats = {
             current = true,
             total = true,
             category = "CONSUMED",
-            notifyServer = true
+            notifyServer = true,
+            resetCurrentOnDeath = true
         },
         zombieKills = {
             ordinal = 300,
             leaderboard = true,
             current = true,
             total = true,
-            category = "KILLS"
+            category = "KILLS",
+            resetCurrentOnDeath = true
         },
         sprinterKills = {
             ordinal = 310,
@@ -91,7 +94,8 @@ PhunStats = {
             current = true,
             total = true,
             category = "KILLS",
-            notifyServer = true
+            notifyServer = true,
+            resetCurrentOnDeath = true
         },
         banditKills = {
             enabled = false,
@@ -99,7 +103,8 @@ PhunStats = {
             ordinal = 320,
             current = true,
             total = true,
-            category = "KILLS"
+            category = "KILLS",
+            resetCurrentOnDeath = true
         },
         pvpKills = {
             enabled = false,
@@ -107,14 +112,16 @@ PhunStats = {
             ordinal = 330,
             current = true,
             total = true,
-            category = "KILLS"
+            category = "KILLS",
+            resetCurrentOnDeath = true
         },
         carKills = {
             ordinal = 340,
             leaderboard = true,
             current = true,
             total = true,
-            category = "KILLS"
+            category = "KILLS",
+            resetCurrentOnDeath = true
         },
         hours = {
             ordinal = 200,
@@ -122,7 +129,8 @@ PhunStats = {
             current = true,
             total = true,
             type = "HOURS",
-            category = "HOURS"
+            category = "HOURS",
+            resetCurrentOnDeath = true
         }
 
     }
@@ -173,13 +181,22 @@ local doTotalAndCurrent = function(stat, player, value)
                 total = {},
                 current = {}
             }
-            -- PhunTools:printTable(data)
+
+            for statKey, statValue in pairs(PhunStats.stats) do
+                if statValue.resetCurrentOnDeath then
+                    data.current[statKey] = 0
+                    table.insert(updates.current, statKey)
+                end
+            end
+
+            if PhunWoL and PhunWoL.data[player:getUsername()] then
+                -- reset residual counter
+                local worldHours = math.floor(GameTime:getInstance():getWorldAgeHours() * 100 + 0.5) / 100
+                PhunWoL.data[player:getUsername()].h = worldHours
+            end
+
             data.total[stat.key] = (data.total[stat.key] or 0) + 1
             table.insert(updates.total, stat.key)
-            data.total.hours = (data.total.hours or 0) + data.current.hours
-            table.insert(updates.total, "hours")
-            data.current.hours = 0
-            table.insert(updates.current, "hours")
 
             triggerEvent(PhunStats.events.OnUpdate, player, updates)
         elseif stat.type == "HOURS" then
@@ -192,13 +209,10 @@ local doTotalAndCurrent = function(stat, player, value)
                 triggerEvent(PhunStats.events.OnUpdate, player, "current", "hours", data.current.hours)
                 triggerEvent(PhunStats.events.OnUpdate, player, "total", "hours", data.total.hours)
             else
-                data.current.hours = player:getHoursSurvived()
-                print("Hours survived: " .. player:getHoursSurvived())
-                PhunTools:printTable(data)
-                print("-----")
+                data.current.hours = (data.current.hours or 0) + value or 0
+                data.total.hours = (data.total.hours or 0) + value or 0
                 triggerEvent(PhunStats.events.OnUpdate, player, "current", stat.key, data.current.hours)
-                triggerEvent(PhunStats.events.OnUpdate, player, "total", stat.key,
-                    (data.total.hours or 0) + data.current.hours)
+                triggerEvent(PhunStats.events.OnUpdate, player, "total", stat.key, data.total.hours)
             end
 
         end

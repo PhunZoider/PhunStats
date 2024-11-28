@@ -128,9 +128,6 @@ function UI:createChildren()
     self:addChild(self.datas);
 
     Events[PL.events.OnDataReceived].Add(function()
-        -- print("PhunLeaderboardUIDetails: OnDataReceived")
-        -- PhunTools:printTable(PL.data)
-        -- print("--------")
         self:refreshData()
     end)
     Events.OnCreatePlayer.Add(function(index, playerObj)
@@ -142,9 +139,7 @@ function UI:prerender()
     ISPanel.prerender(self);
     local maxWidth = self.parent.width
     local maxHeight = self.parent.height
-    if maxHeight > 400 then
-        maxHeight = 400
-    end
+
     local minHeight = 250
     local sw = maxWidth
     local tabY = self.parent.tabHeight
