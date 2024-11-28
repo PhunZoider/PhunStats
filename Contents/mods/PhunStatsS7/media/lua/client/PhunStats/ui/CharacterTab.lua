@@ -357,7 +357,7 @@ function TUI:drawDatas(y, item, alt)
         value = value + PS.data[self.parent.playerName]["current"]["hours"]
     end
 
-    value = PhunTools:formatWholeNumber(PS.data[self.parent.playerName][self.parent.source][item.item.key] or 0)
+    value = PhunTools:formatWholeNumber(value)
     local valueWidth = getTextManager():MeasureStringX(self.font, value)
     local w = self.width
     local cw = self.columns[2].size

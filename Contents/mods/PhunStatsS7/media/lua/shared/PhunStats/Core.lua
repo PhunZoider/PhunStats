@@ -48,7 +48,7 @@ PhunStats = {
         otherDeaths = {
             ordinal = 110,
             current = false,
-            leaderboard = true,
+            leaderboard = false,
             total = true,
             type = "DEATH",
             category = "DEATHS"
@@ -181,13 +181,26 @@ local doTotalAndCurrent = function(stat, player, value)
             data.current.hours = 0
             table.insert(updates.current, "hours")
 
-            -- PhunTools:printTable(data)
             triggerEvent(PhunStats.events.OnUpdate, player, updates)
         elseif stat.type == "HOURS" then
 
-            data.current.hours = player:getHoursSurvived()
+            if isServer() then
 
-            triggerEvent(PhunStats.events.OnUpdate, player, "current", stat.key, data.current.hours)
+                data.current.hours = (data.current.hours or 0) + value or 0
+                data.total.hours = (data.total.hours or 0) + value or 0
+                print("hours=", data.current.hours, " total=", data.total.hours)
+                triggerEvent(PhunStats.events.OnUpdate, player, "current", "hours", data.current.hours)
+                triggerEvent(PhunStats.events.OnUpdate, player, "total", "hours", data.total.hours)
+            else
+                data.current.hours = player:getHoursSurvived()
+                print("Hours survived: " .. player:getHoursSurvived())
+                PhunTools:printTable(data)
+                print("-----")
+                triggerEvent(PhunStats.events.OnUpdate, player, "current", stat.key, data.current.hours)
+                triggerEvent(PhunStats.events.OnUpdate, player, "total", stat.key,
+                    (data.total.hours or 0) + data.current.hours)
+            end
+
         end
     end
 

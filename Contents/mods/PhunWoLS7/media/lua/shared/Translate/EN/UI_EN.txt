@@ -1,3 +1,13 @@
 UI_EN = {
-    UI_PhunWoL_CharacterTab = "Players"
+    UI_PhunWoL_CharacterTab = "Players",
+    UI_PhunWoL_Online = "Online",
+    UI_PhunWoL_Loading = "Loading...",
+    UI_PhunWoL_PlayerName = "Player",
+    UI_PhunWoL_LastOnline = "Last Online",
+    UI_PhunWoL_LessThanAMinute = "less than a minute",
+    UI_PhunWoL_OnlineForX = "Online for %1",
+    UI_PhunWoL_LastSeenX = "Last seen %1",
+    UI_PhunWoL_JustJoined = "Joined while you've been on",
+    UI_PhunWoL_NewSinceYouWereLastOn = "Joined since your last visit",
+    UI_PhunWoL_SessionCountX = "%1 Sessions",
 }

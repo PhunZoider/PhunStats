@@ -15,7 +15,8 @@ Events.OnReceiveGlobalModData.Add(function(tableName, tableData)
     if tableName == PW.name then
         ModData.add(PW.name, tableData)
         PW.data = ModData.get(PW.name)
-        PW:debug("Received online players")
+        PW:calculateOnline()
+        PW.received = true
         triggerEvent(PW.events.OnDataReceived)
     end
 end)
