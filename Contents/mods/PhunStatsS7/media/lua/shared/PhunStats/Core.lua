@@ -177,15 +177,9 @@ local doTotalAndCurrent = function(stat, player, value)
             end
         elseif stat.type == "DEATH" then
 
-            local updates = {
-                total = {},
-                current = {}
-            }
-
             for statKey, statValue in pairs(PhunStats.stats) do
                 if statValue.resetCurrentOnDeath then
                     data.current[statKey] = 0
-                    table.insert(updates.current, statKey)
                 end
             end
 
@@ -196,25 +190,28 @@ local doTotalAndCurrent = function(stat, player, value)
             end
 
             data.total[stat.key] = (data.total[stat.key] or 0) + 1
-            table.insert(updates.total, stat.key)
 
-            triggerEvent(PhunStats.events.OnUpdate, player, updates)
+            triggerEvent(PhunStats.events.OnUpdate, player, "total", stat.key, data.total[stat.key])
         elseif stat.type == "HOURS" then
 
-            if isServer() then
+            value = value or 0
+            if value ~= 0 then
+                data.current.hours = (data.current.hours or 0) + value or 0
+                data.total.hours = (data.total.hours or 0) + value or 0
 
-                data.current.hours = (data.current.hours or 0) + value or 0
-                data.total.hours = (data.total.hours or 0) + value or 0
-                print("hours=", data.current.hours, " total=", data.total.hours)
-                triggerEvent(PhunStats.events.OnUpdate, player, "current", "hours", data.current.hours)
-                triggerEvent(PhunStats.events.OnUpdate, player, "total", "hours", data.total.hours)
-            else
-                data.current.hours = (data.current.hours or 0) + value or 0
-                data.total.hours = (data.total.hours or 0) + value or 0
-                triggerEvent(PhunStats.events.OnUpdate, player, "current", stat.key, data.current.hours)
-                triggerEvent(PhunStats.events.OnUpdate, player, "total", stat.key, data.total.hours)
+                local updates = {
+                    total = {
+                        hours = data.total.hours
+                    },
+                    current = {
+                        hours = data.current.hours
+                    }
+                }
+                -- table.insert(updates.total, "hours")
+                -- table.insert(updates.current, "hours")
+
+                triggerEvent(PhunStats.events.OnUpdate, player, updates)
             end
-
         end
     end
 

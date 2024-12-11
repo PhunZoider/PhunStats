@@ -61,6 +61,7 @@ Events.OnTick.Add(setup)
 
 Events[PL.events.OnUpdate].Add(deferLeadboardUpdates)
 
+-- only auto check on server!
 Events[PS.events.OnUpdate].Add(function(player, category, key, value)
     PL:leaderboardCheck(player, category, key, value)
 end)

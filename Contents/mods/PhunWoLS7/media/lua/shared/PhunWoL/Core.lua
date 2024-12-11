@@ -80,10 +80,14 @@ function Core:ini()
         end
 
         triggerEvent(self.events.OnReady)
-        self:calculateOnline()
+        if isServer() then
+            -- Client will trigger once we receive mod data
+            self:calculateOnline()
+        end
     end
 end
 
+local pz = nil
 local gt = nil
 function Core:calculateOnline()
 
@@ -105,8 +109,20 @@ function Core:calculateOnline()
             -- Check if onlinePlayers is a table or an object with a size method
             if onlinePlayers.size then -- Assuming size is a method in case it's an object
 
+                if pz == nil then
+                    -- cache PhunZones
+                    pz = false
+                    if PhunZones and PhunZones.updateModData then
+                        pz = PhunZones
+                    end
+                end
+
                 for i = 1, onlinePlayers:size() do
                     local p = onlinePlayers:get(i - 1)
+                    if pz then
+                        local lll = pz
+                        lll:updateModData(p)
+                    end
                     local name = p:getUsername()
                     changeKey = changeKey .. name
                     nowOnline[name] = true
@@ -123,13 +139,13 @@ function Core:calculateOnline()
                             pm = now, -- previous modified/seen
                             s = now, -- session start
                             ph = worldHours, -- previous world hours
-                            h = worldHours -- world hours
+                            h = worldHours, -- world hours
+                            z = pz and (p:getModData().PhunZones or {}).zone or nil
                         }
                     else
 
                         if self.data[name].o ~= true then
                             recalcOnline = true
-                            print(name .. " is back online")
                             -- renewing session
                             self.data[name].n = (self.data[name].n or 0) + 1 -- session count
                             self.data[name].s = now -- session start
@@ -145,6 +161,7 @@ function Core:calculateOnline()
                         self.data[name].o = true -- online
                         self.data[name].m = now -- modified/seen
                         self.data[name].h = worldHours
+                        self.data[name].z = pz and (p:getModData().PhunZones or {}).zone or nil
                     end
 
                 end

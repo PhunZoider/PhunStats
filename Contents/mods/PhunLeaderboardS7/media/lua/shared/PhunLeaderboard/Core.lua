@@ -62,13 +62,11 @@ end
 
 function PhunLeaderboard:leaderboardCheck(player, category, key, value)
 
-    -- PhunTools:debug(category)
-
     if key == nil and type(category) == "table" then
         for k, v in pairs(category) do
             if type(v) == "table" then
                 for kk, vv in pairs(v) do
-                    self:leaderboardCheck(player, kk, vv, value)
+                    self:leaderboardCheck(player, k, kk, vv)
                 end
             else
                 self:leaderboardCheck(player, k, v, value)
@@ -82,14 +80,9 @@ function PhunLeaderboard:leaderboardCheck(player, category, key, value)
         value = 1
     end
 
-    print("leaderboardCheck ",
-        tostring(player:getUsername()) .. " " .. tostring(category) .. "." .. tostring(key) .. "=" .. tostring(value))
+    -- print("leaderboardCheck ",
+    --     tostring(player:getUsername()) .. " " .. tostring(category) .. "." .. tostring(key) .. "=" .. tostring(value))
     local leader = self:getLeaderboardEntry(category, key)
-
-    -- if category == "current" and key == "hours" then
-
-    --     self:leaderboardCheck(player, "total", "hours", value)
-    -- end
 
     if value > (leader.value or 0) then
 
