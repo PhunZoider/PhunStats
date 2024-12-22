@@ -8,7 +8,7 @@ local emptyServerCalculate = false
 
 Events.OnTickEvenPaused.Add(function()
 
-    if emptyServerCalculate and emptyServerTickCount > 100 then
+    if emptyServerCalculate == true and emptyServerTickCount > 100 then
         if getOnlinePlayers():size() == 0 then
             emptyServerCalculate = false
             PW.lastChangeKey = ""
@@ -29,6 +29,9 @@ Events.OnServerStarted.Add(function()
     PW:ini()
 end)
 
-Events[PZ.events.OnPhunZoneReady].Add(function(playerObj, zone)
-    PW:calculateOnline()
-end)
+if PZ then
+    Events[PZ.events.OnPhunZoneReady].Add(function(playerObj, zone)
+        PW:calculateOnline()
+    end)
+end
+
