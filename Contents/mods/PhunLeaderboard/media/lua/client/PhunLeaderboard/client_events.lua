@@ -2,7 +2,7 @@ if isServer() then
     return
 end
 local PL = PhunLeaderboard
-local Commands = require "PhunLeaderboard/Commands"
+local Commands = require "PhunLeaderboard/client_commands"
 
 local function setup()
     Events.OnTick.Remove(setup)

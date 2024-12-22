@@ -1,7 +1,7 @@
 if isServer() then
     return
 end
-local formatting = require("PhunRunners/formating")
+local formatting = require("PhunWoL/formating")
 require "ISUI/ISPanel"
 PhunWoLUIDetails = ISPanel:derive("PhunWoLUIDetails");
 local UI = PhunWoLUIDetails

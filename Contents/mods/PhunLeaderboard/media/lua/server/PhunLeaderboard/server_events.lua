@@ -3,8 +3,7 @@ if isClient() then
 end
 local PL = PhunLeaderboard
 local PS = PhunStats
-local Delay = require "PhunLeaderboard/Delay"
-local sendServerCommand = sendServerCommand
+local Delay = require "PhunLeaderboard/delay"
 
 local lastDelayTime = 0
 local lastModified = 0
@@ -38,7 +37,7 @@ local function deferLeadboardUpdates(category, key)
 
 end
 
-function PhunLeaderboard:setDeferment()
+function PL:setDeferment()
     local seconds = PL.settings.deferSeconds
     Delay:set(seconds, function()
         if (PL.deferrmentLastModified or 0) > (PL.deferrmentLastSent or 0) then
