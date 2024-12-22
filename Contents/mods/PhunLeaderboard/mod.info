@@ -1,0 +1,7 @@
+title=PhunLeaderboard
+name=PhunLeaderboard
+id=phunleaderboard
+authors=UburGeek
+description=Leaderboard for PhunStats
+poster=poster.png
+require=phunstats

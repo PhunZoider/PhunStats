@@ -1,0 +1,7 @@
+title=PhunWoL
+name=PhunWoL
+id=phunwol
+authors=UburGeek
+description=Online Players for PhunZoid Servers
+poster=poster.png
+require=phunstats
