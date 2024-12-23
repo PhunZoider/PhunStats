@@ -25,6 +25,10 @@ Events.OnTickEvenPaused.Add(function()
     end
 end)
 
+Events.EveryTenMinutes.Add(function()
+    emptyServerCalculate = getOnlinePlayers():size() > 0
+end)
+
 Events.OnServerStarted.Add(function()
     PW:ini()
 end)

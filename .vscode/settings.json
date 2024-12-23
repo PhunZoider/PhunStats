@@ -4,14 +4,90 @@
         "commands": [
             {
                 "match": ".*",
-                "isAsync": true,
-                "cmd": "xcopy ${workspaceFolder}\\Contents ${env.USERPROFILE}\\Zomboid\\Workshop\\PhunStats\\Contents /Y /I /E /F /EXCLUDE:xclude"
-            },           
-            {
-                "match": "Contents\\.*",
-                "isAsync": true,
-                "cmd": "xcopy ${workspaceFolder}\\Contents\\mods ${env.USERPROFILE}\\Zomboid\\mods /Y /I /E /F"
+                "cmd": "rmdir /S /Q ${env.USERPROFILE}\\Zomboid\\mods\\PhunStats 2>nul"
             },
+            {
+                "match": ".*",
+                "cmd": "xcopy ${workspaceFolder}\\Contents\\mods ${env.USERPROFILE}\\Zomboid\\mods /Y /I /E /F /EXCLUDE:xclude"
+            },
+
+            {
+                "match": ".*",
+                "cmd": "xcopy ${workspaceFolder}\\Contents\\mods\\PhunStats\\media ${env.USERPROFILE}\\Zomboid\\mods\\PhunStats\\42\\media /Y /I /E /F"
+            },            
+            {
+                "match": ".*",
+                "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunStats\\mod.info ${env.USERPROFILE}\\Zomboid\\mods\\PhunStats\\42\\mod.info /Y"
+            },
+            {
+                "match": ".*",
+                "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunStats\\poster.png ${env.USERPROFILE}\\Zomboid\\mods\\PhunStats\\42\\poster.png /Y"
+            },
+            {
+                "match": ".*",
+                "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunStats\\icon.png ${env.USERPROFILE}\\Zomboid\\mods\\PhunStats\\42\\icon.png /Y"
+            },
+
+            {
+                "match": ".*",
+                "cmd": "xcopy ${workspaceFolder}\\Contents\\mods\\PhunLeaderboard\\media ${env.USERPROFILE}\\Zomboid\\mods\\PhunLeaderboard\\42\\media /Y /I /E /F"
+            },            
+            {
+                "match": ".*",
+                "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunLeaderboard\\mod.info ${env.USERPROFILE}\\Zomboid\\mods\\PhunLeaderboard\\42\\mod.info /Y"
+            },
+            {
+                "match": ".*",
+                "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunLeaderboard\\poster.png ${env.USERPROFILE}\\Zomboid\\mods\\PhunLeaderboard\\42\\poster.png /Y"
+            },
+            {
+                "match": ".*",
+                "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunLeaderboard\\icon.png ${env.USERPROFILE}\\Zomboid\\mods\\PhunLeaderboard\\42\\icon.png /Y"
+            },
+
+
+            {
+                "match": ".*",
+                "cmd": "xcopy ${workspaceFolder}\\Contents\\mods\\PhunWoL\\media ${env.USERPROFILE}\\Zomboid\\mods\\PhunWoL\\42\\media /Y /I /E /F"
+            },            
+            {
+                "match": ".*",
+                "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunWoL\\mod.info ${env.USERPROFILE}\\Zomboid\\mods\\PhunWoL\\42\\mod.info /Y"
+            },
+            {
+                "match": ".*",
+                "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunWoL\\poster.png ${env.USERPROFILE}\\Zomboid\\mods\\PhunWoL\\42\\poster.png /Y"
+            },
+            {
+                "match": ".*",
+                "cmd": "copy ${workspaceFolder}\\Contents\\mods\\PhunWoL\\icon.png ${env.USERPROFILE}\\Zomboid\\mods\\PhunWoL\\42\\icon.png /Y"
+            },
+
+
+            {
+                "match": ".*",
+                "isAsync": false,
+                "cmd": "rmdir /S /Q ${env.USERPROFILE}\\Zomboid\\Workshop\\PhunStats 2>nul"
+            },
+            {
+                "match": ".*",
+                "isAsync": false,
+                "cmd": "xcopy ${workspaceFolder} ${env.USERPROFILE}\\Zomboid\\Workshop\\PhunStats /Y /I /E /F /EXCLUDE:xclude"
+            },
+
+            {
+                "match": ".*",
+                "isAsync": false,
+                "cmd": "xcopy ${env.USERPROFILE}\\Zomboid\\mods\\PhunStats ${env.USERPROFILE}\\Zomboid\\Workshop\\PhunStats\\Contents\\mods\\PhunStats /Y /I /E /F"
+            },            
+            {
+                "match": ".*",
+                "cmd": "xcopy ${env.USERPROFILE}\\Zomboid\\mods\\PhunLeaderboard ${env.USERPROFILE}\\Zomboid\\Workshop\\PhunStats\\Contents\\mods\\PhunLeaderboard /Y /I /E /F"
+            },
+            {
+                "match": ".*",
+                "cmd": "xcopy ${env.USERPROFILE}\\Zomboid\\mods\\PhunWoL ${env.USERPROFILE}\\Zomboid\\Workshop\\PhunStats\\Contents\\mods\\PhunWoL /Y /I /E /F"
+            },                        
         ]
     },
     "editor.formatOnSave": true,
