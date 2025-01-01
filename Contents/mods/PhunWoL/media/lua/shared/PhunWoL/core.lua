@@ -28,16 +28,16 @@ for _, event in pairs(Core.events) do
 end
 
 function Core:debug(...)
-    if self.settings.debug then
-        local args = {...}
-        for i, v in ipairs(args) do
-            if type(v) == "table" then
-                self:printTable(v)
-            else
-                print(tostring(v))
-            end
+
+    local args = {...}
+    for i, v in ipairs(args) do
+        if type(v) == "table" then
+            self:printTable(v)
+        else
+            print(tostring(v))
         end
     end
+
 end
 
 function Core:printTable(t, indent)
@@ -125,17 +125,13 @@ function Core:calculateOnline()
                 if pz == nil then
                     -- cache PhunZones
                     pz = false
-                    if PhunZones and PhunZones.updateModData then
+                    if PhunZones then
                         pz = PhunZones
                     end
                 end
 
                 for i = 1, onlinePlayers:size() do
                     local p = onlinePlayers:get(i - 1)
-                    if pz then
-                        local lll = pz
-                        lll:updateModData(p)
-                    end
                     local name = p:getUsername()
                     changeKey = changeKey .. name
                     nowOnline[name] = true
@@ -153,7 +149,7 @@ function Core:calculateOnline()
                             s = now, -- session start
                             ph = worldHours, -- previous world hours
                             h = worldHours, -- world hours
-                            z = pz and (p:getModData().PhunZones or {}).zone or nil
+                            z = pz and pz:getPlayerData(p) or nil
                         }
                     else
 
@@ -174,7 +170,7 @@ function Core:calculateOnline()
                         self.data[name].o = true -- online
                         self.data[name].m = now -- modified/seen
                         self.data[name].h = worldHours
-                        self.data[name].z = pz and (p:getModData().PhunZones or {}).zone or nil
+                        self.data[name].z = pz and pz:getPlayerData(p) or nil
                     end
 
                 end

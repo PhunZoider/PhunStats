@@ -146,7 +146,7 @@ for _, event in pairs(Core.events) do
 end
 
 function Core:debug(...)
-    if self.settings.debug then
+
         local args = {...}
         for i, v in ipairs(args) do
             if type(v) == "table" then
@@ -155,7 +155,7 @@ function Core:debug(...)
                 print(tostring(v))
             end
         end
-    end
+
 end
 
 function Core:printTable(t, indent)
