@@ -104,92 +104,89 @@ local pz = nil
 local gt = nil
 function Core:calculateOnline()
 
-    if getOnlinePlayers then
-        local onlinePlayers = getOnlinePlayers() -- Call the function to get the players
-        local nowOnline = {}
-        local changeKey = ""
-        local recalcOnline = false
+    local onlinePlayers = PS:onlinePlayers() -- Call the function to get the players
+    local nowOnline = {}
+    local changeKey = ""
+    local recalcOnline = false
 
-        if onlinePlayers and onlinePlayers.size and onlinePlayers:size() > 0 then
+    if onlinePlayers and onlinePlayers.size and onlinePlayers:size() > 0 then
 
-            if gt == nil then
-                -- cache the GameTime instance
-                gt = GameTime:getInstance()
-            end
-            local worldHours = math.floor(gt:getWorldAgeHours() * 100 + 0.5) / 100
-            local now = getTimestamp()
+        if gt == nil then
+            -- cache the GameTime instance
+            gt = GameTime:getInstance()
+        end
+        local worldHours = math.floor(gt:getWorldAgeHours() * 100 + 0.5) / 100
+        local now = getTimestamp()
 
-            -- Check if onlinePlayers is a table or an object with a size method
-            if onlinePlayers.size then -- Assuming size is a method in case it's an object
+        -- Check if onlinePlayers is a table or an object with a size method
+        if onlinePlayers.size then -- Assuming size is a method in case it's an object
 
-                if pz == nil then
-                    -- cache PhunZones
-                    pz = false
-                    if PhunZones then
-                        pz = PhunZones
-                    end
+            if pz == nil then
+                -- cache PhunZones
+                pz = false
+                if PhunZones then
+                    pz = PhunZones
                 end
+            end
 
-                for i = 1, onlinePlayers:size() do
-                    local p = onlinePlayers:get(i - 1)
-                    local name = p:getUsername()
-                    changeKey = changeKey .. name
-                    nowOnline[name] = true
-                    if not self.data[name] then
-                        print(name .. " is a new player")
+            for i = 1, onlinePlayers:size() do
+                local p = onlinePlayers:get(i - 1)
+                local name = p:getUsername()
+                changeKey = changeKey .. name
+                nowOnline[name] = true
+                if not self.data[name] then
+                    print(name .. " is a new player")
+                    recalcOnline = true
+                    -- New player
+                    self.data[name] = {
+                        -- u = p:getUsername(), -- username
+                        c = now, -- created
+                        o = true, -- online
+                        n = 1, -- session count
+                        m = now, -- modified/seen
+                        pm = now, -- previous modified/seen
+                        s = now, -- session start
+                        ph = worldHours, -- previous world hours
+                        h = worldHours, -- world hours
+                        z = pz and pz:getPlayerData(p) or nil
+                    }
+                else
+
+                    if self.data[name].o ~= true then
                         recalcOnline = true
-                        -- New player
-                        self.data[name] = {
-                            -- u = p:getUsername(), -- username
-                            c = now, -- created
-                            o = true, -- online
-                            n = 1, -- session count
-                            m = now, -- modified/seen
-                            pm = now, -- previous modified/seen
-                            s = now, -- session start
-                            ph = worldHours, -- previous world hours
-                            h = worldHours, -- world hours
-                            z = pz and pz:getPlayerData(p) or nil
-                        }
+                        -- renewing session
+                        self.data[name].n = (self.data[name].n or 0) + 1 -- session count
+                        self.data[name].s = now -- session start
+                        self.data[name].ph = self.data[name].h -- previous world hours
+                        self.data[name].pm = self.data[name].m -- previous modified/seen
                     else
-
-                        if self.data[name].o ~= true then
-                            recalcOnline = true
-                            -- renewing session
-                            self.data[name].n = (self.data[name].n or 0) + 1 -- session count
-                            self.data[name].s = now -- session start
-                            self.data[name].ph = self.data[name].h -- previous world hours
-                            self.data[name].pm = self.data[name].m -- previous modified/seen
-                        else
-                            if PS.stats.hours.register then
-                                -- add difference between h and worldHours to the hours stat
-                                PS.stats.hours:register(p, worldHours - (self.data[name].h or worldHours))
-                            end
+                        if PS.stats.hours.register then
+                            -- add difference between h and worldHours to the hours stat
+                            PS.stats.hours:register(p, worldHours - (self.data[name].h or worldHours))
                         end
-                        -- Existing player
-                        self.data[name].o = true -- online
-                        self.data[name].m = now -- modified/seen
-                        self.data[name].h = worldHours
-                        self.data[name].z = pz and pz:getPlayerData(p) or nil
                     end
-
+                    -- Existing player
+                    self.data[name].o = true -- online
+                    self.data[name].m = now -- modified/seen
+                    self.data[name].h = worldHours
+                    self.data[name].z = pz and pz:getPlayerData(p) or nil
                 end
+
             end
         end
+    end
 
-        if self.lastChangeKey ~= changeKey or recalcOnline then
-            self.lastChangeKey = changeKey
+    if self.lastChangeKey ~= changeKey or recalcOnline then
+        self.lastChangeKey = changeKey
 
-            for k, v in pairs(self.online or {}) do
-                if not nowOnline[k] and self.data[k].o then
-                    self.data[k].o = false
-                    self.data[k].ph = self.data[k].h
-                end
+        for k, v in pairs(self.online or {}) do
+            if not nowOnline[k] and self.data[k].o then
+                self.data[k].o = false
+                self.data[k].ph = self.data[k].h
             end
-            self.online = nowOnline
-            triggerEvent(self.events.updated, self.data, self.online)
         end
-
+        self.online = nowOnline
+        triggerEvent(self.events.updated, self.data, self.online)
     end
 
     Delay:set(15, function()

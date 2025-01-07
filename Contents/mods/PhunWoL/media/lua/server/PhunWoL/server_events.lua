@@ -3,13 +3,14 @@ if isClient() then
 end
 local PW = PhunWoL
 local PZ = PhunZones
+local PS = PhunStats
 local emptyServerTickCount = 0
 local emptyServerCalculate = false
 
 Events.OnTickEvenPaused.Add(function()
 
     if emptyServerCalculate == true and emptyServerTickCount > 100 then
-        if getOnlinePlayers():size() == 0 then
+        if PS:onlinePlayers():size() == 0 then
             emptyServerCalculate = false
             PW.lastChangeKey = ""
             PW.online = {}
@@ -26,7 +27,7 @@ Events.OnTickEvenPaused.Add(function()
 end)
 
 Events.EveryTenMinutes.Add(function()
-    emptyServerCalculate = getOnlinePlayers():size() > 0
+    emptyServerCalculate = PS:onlinePlayers():size() > 0
 end)
 
 Events.OnServerStarted.Add(function()

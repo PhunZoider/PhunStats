@@ -147,14 +147,14 @@ end
 
 function Core:debug(...)
 
-        local args = {...}
-        for i, v in ipairs(args) do
-            if type(v) == "table" then
-                self:printTable(v)
-            else
-                print(tostring(v))
-            end
+    local args = {...}
+    for i, v in ipairs(args) do
+        if type(v) == "table" then
+            self:printTable(v)
+        else
+            print(tostring(v))
         end
+    end
 
 end
 
@@ -258,6 +258,30 @@ function Core:ini()
 
         triggerEvent(self.events.OnReady)
     end
+end
+
+function Core:onlinePlayers(all)
+
+    local onlinePlayers;
+
+    if not isClient() and not isServer() and not isCoopHost() then
+        onlinePlayers = ArrayList.new();
+        local p = getPlayer()
+        onlinePlayers:add(p);
+    elseif all then
+        onlinePlayers = getOnlinePlayers();
+
+    else
+        onlinePlayers = ArrayList.new();
+        for i = 0, getOnlinePlayers():size() - 1 do
+            local player = getOnlinePlayers():get(i);
+            if player:isLocalPlayer() then
+                onlinePlayers:add(player);
+            end
+        end
+    end
+
+    return onlinePlayers;
 end
 
 function Core:getData(player)
