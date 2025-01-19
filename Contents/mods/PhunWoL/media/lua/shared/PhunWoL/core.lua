@@ -189,8 +189,13 @@ function Core:calculateOnline()
         triggerEvent(self.events.updated, self.data, self.online)
     end
 
-    Delay:set(15, function()
-        Core:calculateOnline()
-    end, "calculateOnline")
-
 end
+
+local next = 0
+local frequency = 15
+Events.OnTick.Add(function()
+    if getTimestamp() > next then
+        next = getTimestamp() + frequency
+        Core:calculateOnline()
+    end
+end)

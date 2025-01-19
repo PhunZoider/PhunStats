@@ -2,7 +2,6 @@ if isServer() then
     return
 end
 local PW = PhunWoL
-local PZ = PhunZones
 local function setup()
     Events.OnTick.Remove(setup)
     PW:ini()
@@ -18,8 +17,4 @@ Events.OnReceiveGlobalModData.Add(function(tableName, tableData)
         PW.received = true
         triggerEvent(PW.events.OnDataReceived)
     end
-end)
-
-Events[PZ.events.OnPhunZoneReady].Add(function(playerObj, zone)
-    PW:calculateOnline()
 end)

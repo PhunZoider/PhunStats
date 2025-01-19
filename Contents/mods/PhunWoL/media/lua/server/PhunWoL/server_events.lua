@@ -34,9 +34,3 @@ Events.OnServerStarted.Add(function()
     PW:ini()
 end)
 
-if PZ then
-    Events[PZ.events.OnPhunZoneReady].Add(function(playerObj, zone)
-        PW:calculateOnline()
-    end)
-end
-
